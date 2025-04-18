@@ -11,6 +11,7 @@
 #include "Piece.h"
 #include "Rook.h"
 #include "King.h"
+#include "Queen.h"
 
 using namespace std;
 class GameManager
@@ -29,6 +30,7 @@ public:
     void initGame();
     void setCodeResponse(int code);
     int getCodeResponse() const;
+    bool isCheck() const;
     string getInput();
     void displayBoard() const;
     void makeMove(const string& move);

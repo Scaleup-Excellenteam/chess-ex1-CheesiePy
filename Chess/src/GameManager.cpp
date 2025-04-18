@@ -11,7 +11,8 @@ void GameManager::initGame()
     pieces.push_back(new Rook(false)); // Black right Rook
     pieces.push_back(new King(true)); // White King
     pieces.push_back(new King(false)); // Black King
-
+    pieces.push_back(new Queen(true)); // White Queen
+    pieces.push_back(new Queen(false)); // Black Queen
     // Set up the initial positions of the pieces on the board
     //rooks
     board->setPiece(0, 0, std::unique_ptr<Piece>(pieces[0])); // White Rook at A1
@@ -20,8 +21,13 @@ void GameManager::initGame()
     board->setPiece(7, 7, std::unique_ptr<Piece>(pieces[3])); // Black Rook at H8
 
     // kings
-    board->setPiece(0, 4, std::unique_ptr<Piece>(pieces[4])); // White King at E1
-    board->setPiece(7, 4, std::unique_ptr<Piece>(pieces[5])); // Black King at E8
+    board->setPiece(0, 4, std::unique_ptr<Piece>(pieces[4])); // White King at A5
+    board->setPiece(7, 4, std::unique_ptr<Piece>(pieces[5])); // Black King at H5
+
+    //queens
+
+    board->setPiece(0, 3, std::unique_ptr<Piece>(pieces[6])); // White Queen at A4
+    board->setPiece(7, 3, std::unique_ptr<Piece>(pieces[7])); // Black Queen at H4
 
     // Initialize other pieces similarly...
     // TODO: Add other pieces like Knights, Bishops, etc.   
@@ -49,6 +55,8 @@ int GameManager::getCodeResponse() const
 {
     return codeResponse;
 }
+// TODO: Implement isCheck, isCheckmate, isStalemate, etc.
+
 
 int GameManager::validateMove(std::string input, int playerIsWhite) {
     // Convert input to row and column indices
