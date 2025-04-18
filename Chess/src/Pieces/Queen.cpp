@@ -1,0 +1,32 @@
+
+#include "Queen.h"
+
+Queen::Queen(bool isWhite) : Piece(isWhite) {
+    symbol = isWhite ? 'Q' : 'q'; // Assign symbol based on color
+    isAlive = true; // Queen is alive when created
+}
+
+bool Queen::isValidMove(int srcRow, int srcCol, int destRow, int destCol, const Board& board) const {
+    // Check if the move is in a straight line or diagonal
+    if (srcRow != destRow && srcCol != destCol && abs(srcRow - destRow) != abs(srcCol - destCol)) {
+        return false; // Invalid move
+    }
+
+    // Check path is clear
+    int rowStep = (destRow - srcRow == 0) ? 0 : (destRow - srcRow) / abs(destRow - srcRow);
+    int colStep = (destCol - srcCol == 0) ? 0 : (destCol - srcCol) / abs(destCol - srcCol);
+
+    int row = srcRow + rowStep;
+    int col = srcCol + colStep;
+
+    while (row != destRow || col != destCol) {
+        if (board.getPiece(row, col) != nullptr)
+            return false; // path blocked
+        row += rowStep;
+        col += colStep;
+    }
+
+    // Valid queen move
+    return true;
+}
+

@@ -17,7 +17,17 @@ if (MSVC)
     add_compile_options (/W4 /permissive- /Zc:externConstexpr /Zc:inline)
 endif ()
 
-add_executable (Chess "")
+add_executable(Chess
+    src/main.cpp
+    src/Board.cpp
+    src/Pieces/Rook.cpp
+    src/Pieces/Queen.cpp
+    src/Pieces/Bishop.cpp
+    src/Pieces/Knight.cpp
+    src/Pieces/Pawn.cpp
+    src/Pieces/King.cpp
+    src/GameManager.cpp
+)
 
 
 add_subdirectory (include)
