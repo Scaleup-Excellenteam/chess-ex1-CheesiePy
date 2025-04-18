@@ -12,6 +12,7 @@
 #include "Rook.h"
 #include "King.h"
 #include "Queen.h"
+#include "Bishop.h"
 
 using namespace std;
 class GameManager
