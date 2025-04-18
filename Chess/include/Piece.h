@@ -5,7 +5,7 @@
 
 class Board;
 
-class Piece {
+class Piece { // Abstract base class for chess pieces
 protected:
     bool isWhite;
 
