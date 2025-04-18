@@ -9,12 +9,19 @@ void GameManager::initGame()
     pieces.push_back(new Rook(true)); // White left Rook
     pieces.push_back(new Rook(false)); // Black left Rook
     pieces.push_back(new Rook(false)); // Black right Rook
+    pieces.push_back(new King(true)); // White King
+    pieces.push_back(new King(false)); // Black King
 
     // Set up the initial positions of the pieces on the board
+    //rooks
     board->setPiece(0, 0, std::unique_ptr<Piece>(pieces[0])); // White Rook at A1
     board->setPiece(0, 7, std::unique_ptr<Piece>(pieces[1])); // White Rook at H1
     board->setPiece(7, 0, std::unique_ptr<Piece>(pieces[2])); // Black Rook at A8
     board->setPiece(7, 7, std::unique_ptr<Piece>(pieces[3])); // Black Rook at H8
+
+    // kings
+    board->setPiece(0, 4, std::unique_ptr<Piece>(pieces[4])); // White King at E1
+    board->setPiece(7, 4, std::unique_ptr<Piece>(pieces[5])); // Black King at E8
 
     // Initialize other pieces similarly...
     // TODO: Add other pieces like Knights, Bishops, etc.   

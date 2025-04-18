@@ -10,7 +10,7 @@
 #include "Board.h"
 #include "Piece.h"
 #include "Rook.h"
-
+#include "King.h"
 
 using namespace std;
 class GameManager
