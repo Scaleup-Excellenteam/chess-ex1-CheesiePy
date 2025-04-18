@@ -1,5 +1,9 @@
 // Chess 
 #include "Chess.h"
+#include <iostream>
+#include <string>
+#include "Board.h"
+#include "Rook.h"
 
 int main()
 {
@@ -8,6 +12,30 @@ int main()
 	Chess a(board);
 	int codeResponse = 0;
 	string res = a.getInput();
+
+	// initialize the board
+	Board chessBoard;
+	// set the pieces on the board
+	for (int i = 0; i < 8; ++i) {
+		for (int j = 0; j < 8; ++j) {
+			char pieceChar = board[i * 8 + j];
+			if (pieceChar != '#') {
+				bool isWhite = (pieceChar >= 'A' && pieceChar <= 'Z');
+				switch (pieceChar) {
+					case 'R':
+						chessBoard.setPiece(i, j, std::make_unique<Rook>(isWhite));
+						break;
+					// Add other pieces here
+					default:
+						break;
+				}
+			}
+		}
+	}
+
+	
+
+
 	while (res != "exit")
 	{
 		/* 
@@ -25,12 +53,10 @@ int main()
 		*/
 
 		/**/ 
-		{ // put your code here instead that code
-			cout << "code response >> ";
-			cin >> codeResponse;
+		{
+		
 		}
-		/**/
-
+		
 		a.setCodeResponse(codeResponse);
 		res = a.getInput(); 
 	}
