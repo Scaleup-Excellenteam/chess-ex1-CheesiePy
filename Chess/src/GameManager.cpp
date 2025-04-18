@@ -42,3 +42,40 @@ int GameManager::getCodeResponse() const
 {
     return codeResponse;
 }
+
+int GameManager::validateMove(std::string input, int playerIsWhite) {
+    // Convert input to row and column indices
+    int srcRow = input[0] - 'a'; // Convert 'a' to 0, 'b' to 1, etc.
+    int srcCol = input[1] - '1'; // Convert '1' to 0, '2' to 1, etc.
+    int destRow = input[2] - 'a';
+    int destCol = input[3] - '1';
+
+    // Check if the source and destination are valid
+    if (srcRow < 0 || srcRow >= 8 || srcCol < 0 || srcCol >= 8 ||
+        destRow < 0 || destRow >= 8 || destCol < 0 || destCol >= 8) {
+        return 11; // Invalid move
+    }
+
+    Piece* piece = board->getPiece(srcRow, srcCol);
+    if (piece == nullptr) {
+        return 11; // No piece at source
+    }
+
+    if (piece->getIsWhite() != playerIsWhite) {
+        return 12; // Piece belongs to opponent
+    }
+
+    if (board->getPiece(destRow, destCol) != nullptr) {
+        return 13; // Destination occupied by own piece
+    }
+
+    if (!piece->isValidMove(srcRow, srcCol, destRow, destCol, *board)) {
+        return 21; // Invalid move for the piece
+    }
+
+    // Move the piece
+    board->setPiece(destRow, destCol, std::unique_ptr<Piece>(piece));
+    board->removePiece(srcRow, srcCol);
+
+    return 42; // Move successful
+}

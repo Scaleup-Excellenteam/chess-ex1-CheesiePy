@@ -4,14 +4,8 @@
 #include "Piece.h"
 
 class Rook : public Piece {
-public:
-    Rook(bool isWhite) : Piece(isWhite) {}
-
-    char getSymbol() const override {
-        return isWhite ? 'R' : 'r';
-    }
-
-    bool isValidMove(int srcRow, int srcCol, int destRow, int destCol, const Board& board) const override;
-};
-
+    public:
+        Rook(bool isWhite); // constructor
+        virtual bool isValidMove(int srcRow, int srcCol, int destRow, int destCol, const Board& board) const override; // check if the movement is valid
+    };
 #endif // ROOK_H

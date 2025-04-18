@@ -2,8 +2,7 @@
 #include "Chess.h"
 #include <iostream>
 #include <string>
-#include "Board.h"
-#include "Rook.h"
+#include "GameManager.h"
 
 int main()
 {
@@ -12,7 +11,10 @@ int main()
 	Chess a(board);
 	int codeResponse = 0;
 	string res = a.getInput();
+	GameManager gm;
+	gm.initGame();
 
+	int currentTurn = 0; // 0 for white, 1 for black
 
 	while (res != "exit")
 	{
@@ -31,9 +33,11 @@ int main()
 		*/
 
 		/**/ 
-		{
-		
-		}
+		codeResponse = gm.validateMove(res, currentTurn);
+
+		// if turn was legal, switch turn
+		currentTurn = (currentTurn + 1) % 2; // switch turn
+
 
 		a.setCodeResponse(codeResponse);
 		res = a.getInput(); 

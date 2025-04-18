@@ -1,5 +1,14 @@
 #include "Rook.h"
-#include "../../include/Board.h"
+#include "Board.h"
+#include <cmath> // for abs()
+#include <iostream>
+#include <string>
+
+Rook::Rook(bool isWhite) : Piece(isWhite) {
+    symbol = isWhite ? 'R' : 'r'; // Assign symbol based on color
+    isAlive = true; // Rook is alive when created
+}
+
 
 bool Rook::isValidMove(int srcRow, int srcCol, int destRow, int destCol, const Board& board) const {
     if (srcRow != destRow && srcCol != destCol)

@@ -36,6 +36,8 @@ public:
     bool isCheckmate() const;
     bool isStalemate() const;
     void switchTurn();
+    int validateMove(std::string input, int playerIsWhite); // Validate the move based on the input string
+
 }
 
 #endif // GAMEMANAGER_H
