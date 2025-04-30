@@ -52,9 +52,6 @@ GameManager::GameManager() : board(nullptr), codeResponse(0), playerColor("white
 GameManager::~GameManager()
 {
     delete board; // Clean up the board
-    for (Piece* piece : pieces) {
-        delete piece; // Clean up each piece
-    }
 }
 
 void GameManager::setCodeResponse(int code)
