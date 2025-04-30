@@ -1,4 +1,3 @@
-
 #include "Queen.h"
 
 Queen::Queen(bool isWhite) : Piece(isWhite) {
@@ -11,7 +10,11 @@ bool Queen::isValidMove(int srcRow, int srcCol, int destRow, int destCol, const 
     if (srcRow != destRow && srcCol != destCol && abs(srcRow - destRow) != abs(srcCol - destCol)) {
         return false; // Invalid move
     }
-
+    // Check if the destination is occupied by a piece of the same color
+    Piece* destPiece = board.getPiece(destRow, destCol);
+    if (destPiece != nullptr && destPiece->getIsWhite() == isWhite) {
+        return false; // Cannot capture own piece
+    }
     // Check path is clear
     int rowStep = (destRow - srcRow == 0) ? 0 : (destRow - srcRow) / abs(destRow - srcRow);
     int colStep = (destCol - srcCol == 0) ? 0 : (destCol - srcCol) / abs(destCol - srcCol);
@@ -29,4 +32,3 @@ bool Queen::isValidMove(int srcRow, int srcCol, int destRow, int destCol, const 
     // Valid queen move
     return true;
 }
-
