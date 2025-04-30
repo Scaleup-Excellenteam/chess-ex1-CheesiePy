@@ -15,8 +15,6 @@ public:
     Piece(bool isWhite) : isWhite(isWhite) {}
     virtual ~Piece() = default;
     
-    bool getColor() const { return isWhite; }
-
     // Check if this piece can move from src to dest
     virtual bool isValidMove(int srcRow, int srcCol, int destRow, int destCol, const Board& board) const = 0;
 
