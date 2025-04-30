@@ -7,8 +7,11 @@
 
 
 King::King(bool isWhite) : Piece(isWhite) {
-    symbol = isWhite ? 'K' : 'k'; // Assign symbol based on color
-    isAlive = true; // King is alive when created
+    char symbol = isWhite ? 'K' : 'k'; // Assign symbol based on color
+    bool isAlive = true; // King is alive when created
+    this->setSymbol(symbol); // Set the symbol for the piece
+    this->setIsAlive(isAlive); // Set the alive status for the piece
+    this->setIsWhite(isWhite); // Set the color of the piece
 }
 
 
@@ -26,7 +29,7 @@ bool King::isInCheck(int row, int col, const Board& board) const {
     for (int r = 0; r < 8; ++r) {
         for (int c = 0; c < 8; ++c) {
             Piece* piece = board.getPiece(r, c);
-            if (piece != nullptr && piece->getIsWhite() != isWhite && piece->isValidMove(r, c, row, col, board)) {
+            if (piece != nullptr && piece->getIsWhite() != this->getIsWhite() && piece->isValidMove(r, c, row, col, board)) {
                 return true; // King is in check
             }
         }

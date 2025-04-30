@@ -1,8 +1,11 @@
 #include "Queen.h"
 
 Queen::Queen(bool isWhite) : Piece(isWhite) {
-    symbol = isWhite ? 'Q' : 'q'; // Assign symbol based on color
-    isAlive = true; // Queen is alive when created
+    char symbol = isWhite ? 'Q' : 'q'; // Assign symbol based on color
+    bool isAlive = true; // Queen is alive when created
+    this->setSymbol(symbol); // Set the symbol for the piece
+    this->setIsAlive(isAlive); // Set the alive status for the piece
+    this->setIsWhite(isWhite); // Set the color of the piece
 }
 
 bool Queen::isValidMove(int srcRow, int srcCol, int destRow, int destCol, const Board& board) const {
@@ -12,7 +15,7 @@ bool Queen::isValidMove(int srcRow, int srcCol, int destRow, int destCol, const 
     }
     // Check if the destination is occupied by a piece of the same color
     Piece* destPiece = board.getPiece(destRow, destCol);
-    if (destPiece != nullptr && destPiece->getIsWhite() == isWhite) {
+    if (destPiece != nullptr && destPiece->getIsWhite() == this->getIsWhite()) {
         return false; // Cannot capture own piece
     }
     // Check path is clear

@@ -6,7 +6,7 @@
 class Board;
 
 class Piece { // Abstract base class for chess pieces
-protected:
+private:
     bool isWhite;
     bool isAlive;
     char symbol;

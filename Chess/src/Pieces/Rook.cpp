@@ -4,8 +4,10 @@
 
 
 Rook::Rook(bool isWhite) : Piece(isWhite) {
-    symbol = isWhite ? 'R' : 'r'; // Assign symbol based on color
-    isAlive = true; // Rook is alive when created
+    char symbol = isWhite ? 'R' : 'r'; // Assign symbol based on color
+    this->setSymbol(symbol); // Set the symbol for the piece
+    this->setIsAlive(true); // Rook is alive when created
+    this->setIsWhite(isWhite); // Set the color of the piece
 }
 
 

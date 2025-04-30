@@ -2,9 +2,12 @@
 
 
 Bishop::Bishop(bool isWhite) : Piece(isWhite) {
-    symbol = isWhite ? 'B' : 'b'; // Assign symbol based on color
-    isAlive = true; // Bishop is alive when created
+    char symbol = isWhite ? 'B' : 'b'; // Assign symbol based on color
+    bool isAlive = true; // Bishop is alive when created
+    this->setSymbol(symbol); // Set the symbol for the piece
+    this->setIsAlive(isAlive); // Set the alive status for the piece
 }
+
 
 bool Bishop::isValidMove(int srcRow, int srcCol, int destRow, int destCol, const Board& board) const {
     // Check if the move is diagonal
