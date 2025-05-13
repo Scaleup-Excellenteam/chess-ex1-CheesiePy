@@ -5,19 +5,36 @@ void GameManager::initGame()
     // initialize the board
     board = new Board();
     // initialize pieces
+    pieces.clear(); // Clear any existing pieces
+    pieces.reserve(32); // Reserve space for 32 pieces
+
+    // Initialize pieces
+
+    // rooks
     pieces.push_back(new Rook(true)); // White left Rook
     pieces.push_back(new Rook(true)); // White left Rook
     pieces.push_back(new Rook(false)); // Black left Rook
     pieces.push_back(new Rook(false)); // Black right Rook
+    // kings
     pieces.push_back(new King(true)); // White King
     pieces.push_back(new King(false)); // Black King
+    // queens
     pieces.push_back(new Queen(true)); // White Queen
     pieces.push_back(new Queen(false)); // Black Queen
+
+    // bishops
     pieces.push_back(new Bishop(true)); // White Bishop left
     pieces.push_back(new Bishop(true)); // White Bishop right
     pieces.push_back(new Bishop(false)); // Black Bishop left
     pieces.push_back(new Bishop(false)); // Black Bishop right
-    
+
+    // knights
+    pieces.push_back(new Knight(true)); // White left Knight
+    pieces.push_back(new Knight(true)); // White right Knight
+    pieces.push_back(new Knight(false)); // Black left Knight
+    pieces.push_back(new Knight(false)); // Black right Knight
+
+
     // pawns 
     for (int i = 0; i < 8; ++i) {
         pieces.push_back(new Pawn(true)); // White Pawns
@@ -46,6 +63,13 @@ void GameManager::initGame()
     board->setPiece(7, 2, std::unique_ptr<Piece>(pieces[10])); // Black Bishop left at H3
     board->setPiece(7, 5, std::unique_ptr<Piece>(pieces[11])); // Black Bishop right at H6
     
+    // knights
+    board->setPiece(0, 1, std::unique_ptr<Piece>(pieces[12])); // White left Knight at A2
+    board->setPiece(0, 6, std::unique_ptr<Piece>(pieces[13])); // White right Knight at A7
+    board->setPiece(7, 1, std::unique_ptr<Piece>(pieces[14])); // Black left Knight at H2
+    board->setPiece(7, 6, std::unique_ptr<Piece>(pieces[15])); // Black right Knight at H7
+
+
     // pawns
     for (int i = 0; i < 8; ++i) {
         board->setPiece(1, i, std::unique_ptr<Piece>(pieces[12 + i])); // White Pawns at row 2

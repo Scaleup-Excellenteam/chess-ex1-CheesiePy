@@ -14,6 +14,7 @@
 #include "Queen.h"
 #include "Bishop.h"
 #include "Pawn.h"
+#include "Knight.h"
 
 using namespace std;
 class GameManager
