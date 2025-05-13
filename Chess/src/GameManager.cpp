@@ -17,6 +17,13 @@ void GameManager::initGame()
     pieces.push_back(new Bishop(true)); // White Bishop right
     pieces.push_back(new Bishop(false)); // Black Bishop left
     pieces.push_back(new Bishop(false)); // Black Bishop right
+    
+    // pawns 
+    for (int i = 0; i < 8; ++i) {
+        pieces.push_back(new Pawn(true)); // White Pawns
+        pieces.push_back(new Pawn(false)); // Black Pawns
+    }
+
 
     // Set up the initial positions of the pieces on the board
     //rooks
@@ -39,6 +46,12 @@ void GameManager::initGame()
     board->setPiece(7, 2, std::unique_ptr<Piece>(pieces[10])); // Black Bishop left at H3
     board->setPiece(7, 5, std::unique_ptr<Piece>(pieces[11])); // Black Bishop right at H6
     
+    // pawns
+    for (int i = 0; i < 8; ++i) {
+        board->setPiece(1, i, std::unique_ptr<Piece>(pieces[12 + i])); // White Pawns at row 2
+        board->setPiece(6, i, std::unique_ptr<Piece>(pieces[20 + i])); // Black Pawns at row 7
+    }
+
 
     // Initialize other pieces similarly...
     // TODO: Add other pieces like Knights, Bishops, etc.   
