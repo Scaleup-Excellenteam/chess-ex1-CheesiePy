@@ -5,6 +5,15 @@
 #include <memory>
 #include <vector>
 
+
+struct CMove {
+    int srcRow, srcCol;
+    int destRow, destCol;
+};
+
+
+
+
 class Board {
 private:
     std::vector<std::vector<std::unique_ptr<Piece>>> grid; // polymorphic container for pieces
@@ -15,10 +24,34 @@ private:
 
 public:
     Board();
+
+    Board(const Board& other);
+    Board& operator=(const Board& rhs);
+
+
+    // --- AI support functions ---
+
+    /// return every move that side is allowed to make
+    /// (i.e. no self‐checks, obey piece rules, castling, en‐passant, etc.)
+    std::vector<CMove> generateLegalMoves(bool whiteToMove) const;
+
+    /// mutate this Board by playing that move
+    /// (you must update piece positions, captures, castling rights, en‐passant, etc.)
+    void applyMove(CMove m);
+
+    /// true if the given side’s king is currently in check
+    bool inCheck(bool whiteKing) const;
+
+
     Piece* getPiece(int row, int col) const;
     void setPiece(int row, int col, std::unique_ptr<Piece> piece);
 
     std::unique_ptr<Piece> removePiece(int row, int col);
+    // generate leageal moves for the piece at (row, col)
+
+
+
+    
 };
 
 #endif // BOARD_H
