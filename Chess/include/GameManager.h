@@ -43,6 +43,8 @@ public:
     void switchTurn();
     int validateMove(std::string input, int playerIsWhite); // Validate the move based on the input string
 
+    const Board& currentBoard() const { return *board; } // Get the current board state
+
 }
 
 #endif // GAMEMANAGER_H

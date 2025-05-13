@@ -1,4 +1,5 @@
 #include "AI/BestMoveFinder.h"
+
 using namespace AI;
 
 // comparator: highest‐score first
@@ -65,10 +66,7 @@ static int minimax(const Board& board,
     }
 }
 
-std::vector<RecommendedMove>
-findBestMoves(const Board& board,
-              bool whiteToMove,
-              int maxDepth)
+std::vector<RecommendedMove> AI::findBestMoves(const Board& board, bool whiteToMove, int maxDepth)
 {
     PriorityQueue<RecommendedMove,RecMoveCmp> pq;
 

@@ -33,7 +33,7 @@ public:
     // throws Chess::UnderflowException if empty
     T poll() {
         if (data.empty()) {
-            throw Chess::UnderflowException(); // <== custom exception
+            throw ChessException::UnderflowException(); // <== custom exception
         }
         T front = data.front();
         data.pop_front();

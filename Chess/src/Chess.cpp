@@ -1,4 +1,10 @@
+
+#include "GameManager.h"
+#include "AI/BestMoveFinder.h"
+
+
 #include "Chess.h"
+
 #include <iostream>
 #include <string>
 
@@ -165,6 +171,8 @@ void Chess::setPieces()
 
 #endif // WINDOWS
 
+
+
 // print the only the board to screen 
 void Chess::show() const 
 {
@@ -227,6 +235,13 @@ void Chess::excute()
 // check the response code and switch turn if needed 
 void Chess::doTurn()
 {
+
+	int srcRow = (m_input[0] - 'a');
+	int srcCol = (m_input[1] - '1');
+	int destRow = (m_input[2] - 'a');
+	int destCol = (m_input[3] - '1');
+
+
 	m_errorMsg = "\n"; 
 	switch (m_codeResponse)
 	{
@@ -259,6 +274,13 @@ void Chess::doTurn()
 	{
 		excute();
 		m_turn = !m_turn;
+		auto recs = AI::findBestMoves(manager_.currentBoard(), m_turn, 2);
+
+		    if (!recs.empty()) {
+        		cout << "Best move: " << recs.front().toString() << endl;
+			}
+
+
 		m_msg = "the last movement was legal and cause check \n";
 		break;
 	}
@@ -266,6 +288,7 @@ void Chess::doTurn()
 	{
 		excute();
 		m_turn = !m_turn;
+		auto recs = AI::findBestMoves(manager_.currentBoard(), m_turn, 2);
 		m_msg = "the last movement was legal \n";
 		break;
 	}
@@ -278,6 +301,7 @@ Chess::Chess(const string& start)
 {
 	setFrames();
 	setPieces();
+	manager_.initGame();
 }
 
 // get the source and destination 

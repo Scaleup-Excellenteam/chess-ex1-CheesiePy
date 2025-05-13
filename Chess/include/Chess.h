@@ -5,6 +5,7 @@
 #endif
 
 #include <string>
+#include "GameManager.h"
 
 using std::cout;
 using std::cin; 
@@ -21,6 +22,9 @@ class Chess {
 	string m_msg = "\n";
 	string m_errorMsg = "\n";
 	int m_codeResponse;
+	GameManager manager_;
+
+
 
 	void clear() const;
 	void setFrames();
@@ -33,6 +37,7 @@ class Chess {
 	bool isExit() const;
 	void excute();
 	void doTurn();
+
 
 public:
 	Chess(const string& start = "RNBQKBNRPPPPPPPP################################pppppppprnbqkbnr");

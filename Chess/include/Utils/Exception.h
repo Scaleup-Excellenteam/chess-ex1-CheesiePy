@@ -4,14 +4,14 @@
 #include <exception>
 #include <string>
 
-namespace Chess {
+namespace ChessException {
 
 /**
- * base class for all chess‑related errors
+ * base class for all chess-related errors
  */
-class ChessException : public std::exception {
+class ChessError : public std::exception {
 public:
-    explicit ChessException(const std::string& msg) noexcept
+    explicit ChessError(const std::string& msg) noexcept
         : message_(msg) {}
 
     const char* what() const noexcept override {
@@ -23,9 +23,9 @@ private:
 };
 
 /** board access errors */
-class BoardException : public ChessException {
+class BoardException : public ChessError {
 public:
-    using ChessException::ChessException;
+    using ChessError::ChessError;
 };
 
 class OutOfBoundsException : public BoardException {
@@ -40,10 +40,10 @@ public:
         : BoardException("no piece at: (" + std::to_string(r) + "," + std::to_string(c) + ")") {}
 };
 
-/** move‑related errors */
-class MoveException : public ChessException {
+/** move-related errors */
+class MoveException : public ChessError {
 public:
-    using ChessException::ChessException;
+    using ChessError::ChessError;
 };
 
 class InvalidMoveException : public MoveException {
@@ -59,9 +59,9 @@ public:
 };
 
 /** game state errors */
-class GameLogicException : public ChessException {
+class GameLogicException : public ChessError {
 public:
-    using ChessException::ChessException;
+    using ChessError::ChessError;
 };
 
 class CheckmateException : public GameLogicException {
@@ -77,12 +77,12 @@ public:
 };
 
 /** utility exceptions */
-class UnderflowException : public ChessException {
+class UnderflowException : public ChessError {
 public:
     UnderflowException() noexcept
-        : ChessException("priority queue underflow") {}
+        : ChessError("priority queue underflow") {}
 };
 
-} // namespace Chess
+} // namespace ChessException
 
 #endif // CHESS_UTILS_EXCEPTION_H
