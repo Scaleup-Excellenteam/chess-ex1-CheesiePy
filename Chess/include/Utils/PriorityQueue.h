@@ -1,8 +1,8 @@
 #ifndef PRIORITYQUEUE_H
 #define PRIORITYQUEUE_H
 
+#include "Exception.h"  // Chess::UnderflowException
 #include <list>
-#include <stdexcept>  // for std::underflow_error
 
 // templated priority queue: T is the element type, Comparator returns
 // positive if a has higher priority than b, negative if lower, zero if equal.
@@ -30,10 +30,10 @@ public:
     }
 
     // remove and return the highest-priority element (O(1))
-    // throws underflow_error if empty
+    // throws Chess::UnderflowException if empty
     T poll() {
         if (data.empty()) {
-            throw std::underflow_error("priority queue is empty");
+            throw Chess::UnderflowException(); // <== custom exception
         }
         T front = data.front();
         data.pop_front();
