@@ -279,8 +279,6 @@ void Chess::doTurn()
 		    if (!recs.empty()) {
         		cout << "Best move: " << recs.front().toString() << endl;
 			}
-
-
 		m_msg = "the last movement was legal and cause check \n";
 		break;
 	}
@@ -289,6 +287,10 @@ void Chess::doTurn()
 		excute();
 		m_turn = !m_turn;
 		auto recs = AI::findBestMoves(manager_.currentBoard(), m_turn, 2);
+		    if (!recs.empty()) {
+				cout << "Best move: " << recs.front().toString() << endl;
+			}
+
 		m_msg = "the last movement was legal \n";
 		break;
 	}
