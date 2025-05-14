@@ -1,5 +1,6 @@
 #include "Queen.h"
-
+#include "Board.h"
+#include <cmath> // for abs()
 Queen::Queen(bool isWhite) : Piece(isWhite) {
     char symbol = isWhite ? 'Q' : 'q'; // Assign symbol based on color
     bool isAlive = true; // Queen is alive when created

@@ -1,4 +1,10 @@
+
+#include "GameManager.h"
+#include "AI/BestMoveFinder.h"
+
+
 #include "Chess.h"
+
 #include <iostream>
 #include <string>
 
@@ -165,6 +171,8 @@ void Chess::setPieces()
 
 #endif // WINDOWS
 
+
+
 // print the only the board to screen 
 void Chess::show() const 
 {
@@ -183,13 +191,14 @@ void Chess::displayBoard() const
 	cout << m_msg<< m_errorMsg;
 	
 }
-// print the who is turn before getting input 
+
+// print the who is turn before getting input
 void Chess::showAskInput() const 
 {
 	if (m_turn)
-		cout << "Player 1 (White - Capital letters) >> ";
+		cout << "Player 1 (White - Small letters) >> ";
 	else
-		cout << "Player 2 (Black - Small letters)   >> ";
+		cout << "Player 2 (Black - Capital letters) >> ";
 }
 // check if the source and dest are the same 
 bool Chess::isSame() const 
@@ -222,11 +231,23 @@ void Chess::excute()
 	col = (m_input[3] - '1');
 	m_boardString[(row * 8) + col] = pieceInSource; 
 
-	setPieces(); 
+	setPieces(); // set the new pieces on the board
+
+	// update manager_ with the new board
+	std::string newBoardString = m_boardString;
+	manager_.makeMove(newBoardString);
+
 }
 // check the response code and switch turn if needed 
 void Chess::doTurn()
 {
+
+	int srcRow = (m_input[0] - 'a');
+	int srcCol = (m_input[1] - '1');
+	int destRow = (m_input[2] - 'a');
+	int destCol = (m_input[3] - '1');
+
+
 	m_errorMsg = "\n"; 
 	switch (m_codeResponse)
 	{
@@ -259,6 +280,11 @@ void Chess::doTurn()
 	{
 		excute();
 		m_turn = !m_turn;
+		auto recs = AI::findBestMoves(manager_.currentBoard(), m_turn, 2);
+
+		    if (!recs.empty()) {
+        		cout << "Best move: " << recs.front().toString() << endl;
+			}
 		m_msg = "the last movement was legal and cause check \n";
 		break;
 	}
@@ -266,6 +292,11 @@ void Chess::doTurn()
 	{
 		excute();
 		m_turn = !m_turn;
+		auto recs = AI::findBestMoves(manager_.currentBoard(), m_turn, 2);
+		    if (!recs.empty()) {
+				cout << "Best move: " << recs.front().toString() << endl;
+			}
+
 		m_msg = "the last movement was legal \n";
 		break;
 	}
@@ -278,6 +309,7 @@ Chess::Chess(const string& start)
 {
 	setFrames();
 	setPieces();
+	manager_.initGame();
 }
 
 // get the source and destination 

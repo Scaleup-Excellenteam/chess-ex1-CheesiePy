@@ -1,8 +1,7 @@
 #ifndef PIECE_H
 #define PIECE_H
 
-#include <string>
-
+#include <memory>
 class Board;
 
 class Piece { // Abstract base class for chess pieces
@@ -17,7 +16,7 @@ public:
     
     // Check if this piece can move from src to dest
     virtual bool isValidMove(int srcRow, int srcCol, int destRow, int destCol, const Board& board) const = 0;
-
+    virtual std::unique_ptr<Piece> clone() const = 0; // for cloning the piece
     // getters and setters
     bool getIsAlive() const { return isAlive; }
     void setIsAlive(bool alive) { isAlive = alive; }
