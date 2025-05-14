@@ -1,4 +1,6 @@
 #include "Board.h"
+#include "Pawn.h"
+
 
 Board::Board() {
     grid.reserve(8); // optional but avoids reallocations
@@ -7,58 +9,131 @@ Board::Board() {
     }
 }
 
-Board::Board(const Board &other)
-{
-    for (int i = 0; i < 8; ++i) {
-        for (int j = 0; j < 8; ++j) {
-            if (other.grid[i][j]) {
-                grid[i][j] = other.grid[i][j]->clone(); // clone the piece
-            } else {
-                grid[i][j] = nullptr; // no piece
-            }
+// --- copy constructor ---
+Board::Board(const Board& other) {
+    grid.reserve(8);
+    // create an 8×8 grid of empty slots
+    for (int r = 0; r < 8; ++r)
+        grid.emplace_back(8);
+
+    // deep‐clone each piece via its virtual clone()
+    for (int r = 0; r < 8; ++r) {
+        for (int c = 0; c < 8; ++c) {
+            Piece* p = other.getPiece(r, c);
+            if (p)
+                grid[r][c] = p->clone();
         }
     }
 }
 
-Board &Board::operator=(const Board &rhs)
-{
-    // TODO: insert return statement here
+// --- copy assignment operator ---
+Board& Board::operator=(const Board& rhs) {
     if (this != &rhs) {
-        for (int i = 0; i < 8; ++i) {
-            for (int j = 0; j < 8; ++j) {
-                if (rhs.grid[i][j]) {
-                    grid[i][j] = rhs.grid[i][j]->clone(); // clone the piece
-                } else {
-                    grid[i][j] = nullptr; // no piece
-                }
+        // reset ourselves
+        grid.clear();
+        grid.reserve(8);
+        for (int r = 0; r < 8; ++r)
+            grid.emplace_back(8);
+
+        // deep‐clone each piece
+        for (int r = 0; r < 8; ++r) {
+            for (int c = 0; c < 8; ++c) {
+                Piece* p = rhs.getPiece(r, c);
+                if (p)
+                    grid[r][c] = p->clone();
             }
         }
     }
     return *this;
 }
 
-std::vector<CMove> Board::generateLegalMoves(bool whiteToMove) const
-{
-    //TODO: implement this function
-    // This function should return a vector of all legal moves for the given side.
-    // You need to check each piece on the board and see if it can move to any valid position.
-    return std::vector<CMove>();
+// --- generate all legal moves for the given side (no self‐checks) ---
+std::vector<CMove> Board::generateLegalMoves(bool whiteToMove) const {
+    std::vector<CMove> moves;
+
+    for (int r = 0; r < 8; ++r) {
+        for (int c = 0; c < 8; ++c) {
+            Piece* p = getPiece(r, c);
+            if (!p || p->getIsWhite() != whiteToMove)
+                continue;
+
+            for (int dr = 0; dr < 8; ++dr) {
+                for (int dc = 0; dc < 8; ++dc) {
+                    if (dr == r && dc == c) 
+                        continue;
+
+                    Piece* target = getPiece(dr, dc);
+                    bool valid = false;
+
+                    // pawn: distinguish between move vs. capture
+                    if (Pawn* pawn = dynamic_cast<Pawn*>(p)) {
+                        if (!target && pawn->isValidMove(r, c, dr, dc, *this))
+                            valid = true;
+                        else if (target && pawn->isValidCapture(r, c, dr, dc, *this))
+                            valid = true;
+                    } 
+                    // all other pieces
+                    else if (p->isValidMove(r, c, dr, dc, *this)) {
+                        valid = true;
+                    }
+
+                    if (!valid) 
+                        continue;
+
+                    // simulate and ensure we don't leave our king in check
+                    Board copy = *this;
+                    copy.applyMove({r, c, dr, dc});
+                    if (!copy.inCheck(whiteToMove))
+                        moves.push_back({r, c, dr, dc});
+                }
+            }
+        }
+    }
+
+    return moves;
 }
 
-void Board::applyMove(CMove m)
-{
-    //TODO: implement this function
-    // This function should apply the move to the board.
-    // You need to update the positions of the pieces and handle captures.
-    // You may also need to handle special moves like castling and en passant.
+// --- apply a move (mutates this Board) ---
+void Board::applyMove(CMove m) {
+    // take ownership of the moving piece
+    std::unique_ptr<Piece> moving = removePiece(m.srcRow, m.srcCol);
+    // overwrite any captured piece and place the mover
+    grid[m.destRow][m.destCol] = std::move(moving);
 }
 
-bool Board::inCheck(bool whiteKing) const
-{
-    //TODO: implement this function
-    // This function should check if the given side's king is in check.
-    // You need to check if any of the opponent's pieces can attack the king's position.
-    // You may need to iterate through all pieces on the board and check their valid moves.
+
+// --- is the given side’s king in check? ---
+bool Board::inCheck(bool whiteKing) const {
+    // locate the king
+    int kingR = -1, kingC = -1;
+    char kingSym = whiteKing ? 'K' : 'k';
+    for (int r = 0; r < 8 && kingR < 0; ++r) {
+        for (int c = 0; c < 8; ++c) {
+            Piece* p = getPiece(r, c);
+            if (p && p->getSymbol() == kingSym) {
+                kingR = r; kingC = c;
+                break;
+            }
+        }
+    }
+    if (kingR < 0)
+        return false; // no king found => not in check
+
+    // see if any enemy piece attacks that square
+    for (int r = 0; r < 8; ++r) {
+        for (int c = 0; c < 8; ++c) {
+            Piece* p = getPiece(r, c);
+            if (p && p->getIsWhite() != whiteKing) {
+                // pawn captures are special
+                if (Pawn* pawn = dynamic_cast<Pawn*>(p)) {
+                    if (pawn->isValidCapture(r, c, kingR, kingC, *this))
+                        return true;
+                } else if (p->isValidMove(r, c, kingR, kingC, *this)) {
+                    return true;
+                }
+            }
+        }
+    }
     return false;
 }
 

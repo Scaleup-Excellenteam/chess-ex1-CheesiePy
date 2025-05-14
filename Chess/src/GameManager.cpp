@@ -37,7 +37,10 @@ void GameManager::initGame()
 
     // pawns 
     for (int i = 0; i < 8; ++i) {
-        pieces.push_back(new Pawn(true)); // White Pawns
+        pieces.push_back(new Pawn(true)); // White Pawns (posision)
+    }
+
+    for (int i = 0; i < 8; ++i) {
         pieces.push_back(new Pawn(false)); // Black Pawns
     }
 
@@ -72,13 +75,9 @@ void GameManager::initGame()
 
     // pawns
     for (int i = 0; i < 8; ++i) {
-        board->setPiece(1, i, std::unique_ptr<Piece>(pieces[12 + i])); // White Pawns at row 2
-        board->setPiece(6, i, std::unique_ptr<Piece>(pieces[20 + i])); // Black Pawns at row 7
+        board->setPiece(1, i, std::unique_ptr<Piece>(pieces[16 + i])); // White Pawns at row 2
+        board->setPiece(6, i, std::unique_ptr<Piece>(pieces[24 + i])); // Black Pawns at row 7
     }
-
-
-    // Initialize other pieces similarly...
-    // TODO: Add other pieces like Knights, Bishops, etc.   
 }
 
 GameManager::GameManager() : board(nullptr), codeResponse(0), playerColor("white"), opponentColor("black")
