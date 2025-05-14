@@ -191,13 +191,14 @@ void Chess::displayBoard() const
 	cout << m_msg<< m_errorMsg;
 	
 }
-// print the who is turn before getting input 
+
+// print the who is turn before getting input
 void Chess::showAskInput() const 
 {
 	if (m_turn)
-		cout << "Player 1 (White - Capital letters) >> ";
+		cout << "Player 1 (White - Small letters) >> ";
 	else
-		cout << "Player 2 (Black - Small letters)   >> ";
+		cout << "Player 2 (Black - Capital letters) >> ";
 }
 // check if the source and dest are the same 
 bool Chess::isSame() const 
@@ -230,7 +231,12 @@ void Chess::excute()
 	col = (m_input[3] - '1');
 	m_boardString[(row * 8) + col] = pieceInSource; 
 
-	setPieces(); 
+	setPieces(); // set the new pieces on the board
+
+	// update manager_ with the new board
+	std::string newBoardString = m_boardString;
+	manager_.makeMove(newBoardString);
+
 }
 // check the response code and switch turn if needed 
 void Chess::doTurn()

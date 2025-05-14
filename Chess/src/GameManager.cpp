@@ -80,10 +80,6 @@ void GameManager::initGame()
     }
 }
 
-GameManager::GameManager() : board(nullptr), codeResponse(0), playerColor("white"), opponentColor("black")
-{
-    initGame();
-}
 
 GameManager::~GameManager()
 {
@@ -99,8 +95,6 @@ int GameManager::getCodeResponse() const
 {
     return codeResponse;
 }
-// TODO: Implement isCheck, isCheckmate, isStalemate, etc.
-
 
 int GameManager::validateMove(std::string input, int playerIsWhite) {
     // Convert input to row and column indices
@@ -137,4 +131,112 @@ int GameManager::validateMove(std::string input, int playerIsWhite) {
     board->removePiece(srcRow, srcCol);
 
     return 42; // Move successful
+}
+
+
+
+// ——— constructor ———
+GameManager::GameManager()
+  : board(nullptr),
+    codeResponse(-1),
+    playerColor("white"),
+    opponentColor("black")
+{
+    initGame();
+}
+
+// ——— isCheck ———
+// return true if the current player's king is in check
+bool GameManager::isCheck() const
+{
+    bool white = (playerColor == "white");
+    return board->inCheck(white);
+}
+
+// ——— getInput ———
+// simple wrapper to read a move string
+std::string GameManager::getInput()
+{
+    std::string input;
+    std::cin >> input;
+    return input;
+}
+
+// ——— displayBoard ———
+// print the board (rank 8 down to 1) using each piece's symbol or “. ”
+void GameManager::displayBoard() const
+{
+    for (int r = 7; r >= 0; --r) {
+        for (int c = 0; c < 8; ++c) {
+            Piece* p = board->getPiece(r, c);
+            if (p)
+                std::cout << p->getSymbol() << ' ';
+            else
+                std::cout << ". ";
+        }
+        std::cout << "\n";
+    }
+}
+
+// ——— makeMove ———
+// validate & apply a move, set the codeResponse, and swap turns on success
+void GameManager::makeMove(const std::string& move)
+{
+    int playerIsWhite = (playerColor == "white") ? 1 : 0;
+    int code = validateMove(move, playerIsWhite);
+    setCodeResponse(code);
+    if (code == 42 || code == 41) {
+        switchTurn();
+    }
+}
+
+// ——— isValidMove ———
+// check move legality without mutating the board by looking at generateLegalMoves
+bool GameManager::isValidMove(const std::string& move) const
+{
+    if (move.size() != 4) return false;
+    int srcRow  = move[0] - 'a';
+    int srcCol  = move[1] - '1';
+    int destRow = move[2] - 'a';
+    int destCol = move[3] - '1';
+
+    bool whiteToMove = (playerColor == "white");
+    auto legal = board->generateLegalMoves(whiteToMove);
+    for (const auto& m : legal) {
+        if (m.srcRow  == srcRow  &&
+            m.srcCol  == srcCol  &&
+            m.destRow == destRow &&
+            m.destCol == destCol)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+// ——— isCheckmate ———
+// checkmate: side to move is in check and has no legal replies
+bool GameManager::isCheckmate() const
+{
+    bool whiteToMove = (playerColor == "white");
+    if (!board->inCheck(whiteToMove)) return false;
+    auto legal = board->generateLegalMoves(whiteToMove);
+    return legal.empty();
+}
+
+// ——— isStalemate ———
+// stalemate: side to move is not in check but has no legal replies
+bool GameManager::isStalemate() const
+{
+    bool whiteToMove = (playerColor == "white");
+    if (board->inCheck(whiteToMove)) return false;
+    auto legal = board->generateLegalMoves(whiteToMove);
+    return legal.empty();
+}
+
+// ——— switchTurn ———
+// swap the two color‐strings so the other side moves next
+void GameManager::switchTurn()
+{
+    std::swap(playerColor, opponentColor);
 }

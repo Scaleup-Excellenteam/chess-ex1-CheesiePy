@@ -16,15 +16,16 @@
 #include "Pawn.h"
 #include "Knight.h"
 
-using namespace std;
+
 class GameManager
 {
+    
 private:
     Board* board; // Pointer to the chess board
-    vector<Piece*> pieces; // Store all pieces
+    std::vector<Piece*> pieces; // Store all pieces
     int codeResponse;
-    string playerColor;
-    string opponentColor;
+    std::string playerColor;
+    std::string opponentColor;
 
 public:
     GameManager();
@@ -34,10 +35,10 @@ public:
     void setCodeResponse(int code);
     int getCodeResponse() const;
     bool isCheck() const;
-    string getInput();
+    std::string getInput();
     void displayBoard() const;
-    void makeMove(const string& move);
-    bool isValidMove(const string& move) const;
+    void makeMove(const std::string& move);
+    bool isValidMove(const std::string& move) const;
     bool isCheckmate() const;
     bool isStalemate() const;
     void switchTurn();
