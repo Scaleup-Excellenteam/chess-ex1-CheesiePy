@@ -1,89 +1,69 @@
 #include "GameManager.h"
 
+// ——— constructor ———
+GameManager::GameManager()
+  : board(nullptr),
+    codeResponse(-1),
+    isWhiteTurn_(true)
+{
+    initGame();
+}
+
+// ——— initGame ———
 void GameManager::initGame()
 {
-    // initialize the board
-    board = new Board();
-    // initialize pieces
-    pieces.clear(); // Clear any existing pieces
-    pieces.reserve(32); // Reserve space for 32 pieces
 
-    // Initialize pieces
+    /* 1. fresh board ------------------------------------------- */
+    board = std::make_unique<Board>();
 
-    // rooks
-    pieces.push_back(new Rook(true)); // White left Rook
-    pieces.push_back(new Rook(true)); // White left Rook
-    pieces.push_back(new Rook(false)); // Black left Rook
-    pieces.push_back(new Rook(false)); // Black right Rook
-    // kings
-    pieces.push_back(new King(true)); // White King
-    pieces.push_back(new King(false)); // Black King
-    // queens
-    pieces.push_back(new Queen(true)); // White Queen
-    pieces.push_back(new Queen(false)); // Black Queen
+    /* 2. fresh piece registry ---------------------------------- */
+    pieces.clear();
+    pieces.reserve(32);
 
-    // bishops
-    pieces.push_back(new Bishop(true)); // White Bishop left
-    pieces.push_back(new Bishop(true)); // White Bishop right
-    pieces.push_back(new Bishop(false)); // Black Bishop left
-    pieces.push_back(new Bishop(false)); // Black Bishop right
+    /* helper: push raw pointer into pieces[] and pass unique_ptr to Board */
+    auto put = [this](int row, int col, Piece* raw)
+    {
+        pieces.push_back(raw);
+        board->setPiece(row, col, std::unique_ptr<Piece>(raw));
+    };
 
-    // knights
-    pieces.push_back(new Knight(true)); // White left Knight
-    pieces.push_back(new Knight(true)); // White right Knight
-    pieces.push_back(new Knight(false)); // Black left Knight
-    pieces.push_back(new Knight(false)); // Black right Knight
+    /* 3. Black back rank (row 0) – UPPER-case symbols ----------- */
+    put(0, 0, new Rook  (false));   // A8
+    put(0, 1, new Knight(false));   // B8
+    put(0, 2, new Bishop(false));   // C8
+    put(0, 3, new Queen (false));   // D8
+    put(0, 4, new King  (false));   // E8
+    put(0, 5, new Bishop(false));   // F8
+    put(0, 6, new Knight(false));   // G8
+    put(0, 7, new Rook  (false));   // H8
 
+    /* 4. Black pawns (row 1) ----------------------------------- */
+    for (int c = 0; c < 8; ++c)
+        put(1, c, new Pawn(false));           // A7 .. H7
 
-    // pawns 
-    for (int i = 0; i < 8; ++i) {
-        pieces.push_back(new Pawn(true)); // White Pawns (posision)
-    }
+    /* 5. White pawns (row 6) – lower-case symbols -------------- */
+    for (int c = 0; c < 8; ++c)
+        put(6, c, new Pawn(true));            // A2 .. H2
 
-    for (int i = 0; i < 8; ++i) {
-        pieces.push_back(new Pawn(false)); // Black Pawns
-    }
-
-
-    // Set up the initial positions of the pieces on the board
-    //rooks
-    board->setPiece(0, 0, std::unique_ptr<Piece>(pieces[0])); // White Rook at A1
-    board->setPiece(0, 7, std::unique_ptr<Piece>(pieces[1])); // White Rook at H1
-    board->setPiece(7, 0, std::unique_ptr<Piece>(pieces[2])); // Black Rook at A8
-    board->setPiece(7, 7, std::unique_ptr<Piece>(pieces[3])); // Black Rook at H8
-
-    // kings
-    board->setPiece(0, 4, std::unique_ptr<Piece>(pieces[4])); // White King at A5
-    board->setPiece(7, 4, std::unique_ptr<Piece>(pieces[5])); // Black King at H5
-
-    //queens
-    board->setPiece(0, 3, std::unique_ptr<Piece>(pieces[6])); // White Queen at A4
-    board->setPiece(7, 3, std::unique_ptr<Piece>(pieces[7])); // Black Queen at H4
-
-    // bishops
-    board->setPiece(0, 2, std::unique_ptr<Piece>(pieces[8])); // White Bishop left at A3
-    board->setPiece(0, 5, std::unique_ptr<Piece>(pieces[9])); // White Bishop right at A6
-    board->setPiece(7, 2, std::unique_ptr<Piece>(pieces[10])); // Black Bishop left at H3
-    board->setPiece(7, 5, std::unique_ptr<Piece>(pieces[11])); // Black Bishop right at H6
-    
-    // knights
-    board->setPiece(0, 1, std::unique_ptr<Piece>(pieces[12])); // White left Knight at A2
-    board->setPiece(0, 6, std::unique_ptr<Piece>(pieces[13])); // White right Knight at A7
-    board->setPiece(7, 1, std::unique_ptr<Piece>(pieces[14])); // Black left Knight at H2
-    board->setPiece(7, 6, std::unique_ptr<Piece>(pieces[15])); // Black right Knight at H7
-
-
-    // pawns
-    for (int i = 0; i < 8; ++i) {
-        board->setPiece(1, i, std::unique_ptr<Piece>(pieces[16 + i])); // White Pawns at row 2
-        board->setPiece(6, i, std::unique_ptr<Piece>(pieces[24 + i])); // Black Pawns at row 7
-    }
+    /* 6. White back rank (row 7) ------------------------------- */
+    put(7, 0, new Rook  (true));    // A1
+    put(7, 1, new Knight(true));    // B1
+    put(7, 2, new Bishop(true));    // C1
+    put(7, 3, new Queen (true));    // D1
+    put(7, 4, new King  (true));    // E1
+    put(7, 5, new Bishop(true));    // F1
+    put(7, 6, new Knight(true));    // G1
+    put(7, 7, new Rook  (true));    // H1
 }
 
 
 GameManager::~GameManager()
 {
-    delete board; // Clean up the board
+    board.reset(); // Automatically cleans up the board and pieces
+    for (Piece* piece : pieces) {
+        delete piece; // Clean up each piece
+    }
+    pieces.clear(); // Clear the vector of pieces
 }
 
 void GameManager::setCodeResponse(int code)
@@ -96,61 +76,13 @@ int GameManager::getCodeResponse() const
     return codeResponse;
 }
 
-int GameManager::validateMove(std::string input, int playerIsWhite) {
-    // Convert input to row and column indices
-    int srcRow = input[0] - 'a'; // Convert 'a' to 0, 'b' to 1, etc.
-    int srcCol = input[1] - '1'; // Convert '1' to 0, '2' to 1, etc.
-    int destRow = input[2] - 'a';
-    int destCol = input[3] - '1';
-
-    // Check if the source and destination are valid
-    if (srcRow < 0 || srcRow >= 8 || srcCol < 0 || srcCol >= 8 ||
-        destRow < 0 || destRow >= 8 || destCol < 0 || destCol >= 8) {
-        return 11; // Invalid move
-    }
-
-    Piece* piece = board->getPiece(srcRow, srcCol);
-    if (piece == nullptr) {
-        return 11; // No piece at source
-    }
-
-    if (piece->getIsWhite() != playerIsWhite) {
-        return 12; // Piece belongs to opponent
-    }
-
-    if (board->getPiece(destRow, destCol) != nullptr) {
-        return 13; // Destination occupied by own piece
-    }
-
-    if (!piece->isValidMove(srcRow, srcCol, destRow, destCol, *board)) {
-        return 21; // Invalid move for the piece
-    }
-
-    // Move the piece
-    board->setPiece(destRow, destCol, std::unique_ptr<Piece>(piece));
-    board->removePiece(srcRow, srcCol);
-
-    return 42; // Move successful
-}
-
-
-
-// ——— constructor ———
-GameManager::GameManager()
-  : board(nullptr),
-    codeResponse(-1),
-    playerColor("white"),
-    opponentColor("black")
-{
-    initGame();
-}
 
 // ——— isCheck ———
 // return true if the current player's king is in check
 bool GameManager::isCheck() const
 {
-    bool white = (playerColor == "white");
-    return board->inCheck(white);
+    bool whiteToMove = isWhiteTurn_;
+    return board->inCheck(whiteToMove);
 }
 
 // ——— getInput ———
@@ -182,43 +114,62 @@ void GameManager::displayBoard() const
 // validate & apply a move, set the codeResponse, and swap turns on success
 void GameManager::makeMove(const std::string& move)
 {
-    int playerIsWhite = (playerColor == "white") ? 1 : 0;
-    int code = validateMove(move, playerIsWhite);
+    int playerIsWhite = whiteToMove() ? 1 : 0;
+    int code = validateMove(move);
     setCodeResponse(code);
     if (code == 42 || code == 41) {
-        switchTurn();
+
+        isWhiteTurn_ = !isWhiteTurn_; // switch turn only on legal moves
     }
+}
+
+bool GameManager::makeMove(int srcRow, int srcCol, int destRow, int destCol)
+{
+    if (!board) return false;
+
+    Piece* moving = board->getPiece(srcRow, srcCol);
+    if (!moving) return false;                 // should never happen
+
+    /* Take ownership of the source square’s unique_ptr */
+    std::unique_ptr<Piece> tmp = board->removePiece(srcRow, srcCol);
+
+    /* If destination holds an opponent piece, it is automatically deleted
+       when we overwrite the unique_ptr in that square. */
+    board->setPiece(destRow, destCol, std::move(tmp));
+    isWhiteTurn_ = !isWhiteTurn_; // switch turn
+
+    return true;
+    
 }
 
 // ——— isValidMove ———
 // check move legality without mutating the board by looking at generateLegalMoves
-bool GameManager::isValidMove(const std::string& move) const
+int GameManager::validateMove(const std::string& mv) const
 {
-    if (move.size() != 4) return false;
-    int srcRow  = move[0] - 'a';
-    int srcCol  = move[1] - '1';
-    int destRow = move[2] - 'a';
-    int destCol = move[3] - '1';
+    if (mv.size()!=4) return 11;
 
-    bool whiteToMove = (playerColor == "white");
-    auto legal = board->generateLegalMoves(whiteToMove);
-    for (const auto& m : legal) {
-        if (m.srcRow  == srcRow  &&
-            m.srcCol  == srcCol  &&
-            m.destRow == destRow &&
-            m.destCol == destCol)
-        {
-            return true;
-        }
-    }
-    return false;
+    int sR = mv[0]-'a', sC = mv[1]-'1';
+    int dR = mv[2]-'a', dC = mv[3]-'1';
+    if (sR<0||sR>=8||sC<0||sC>=8||dR<0||dR>=8||dC<0||dC>=8) return 11;
+
+    Piece* src = board->getPiece(sR,sC);
+    if (!src) return 11;                           // no piece
+    if (src->getIsWhite()!=isWhiteTurn_) return 12; // opponent’s piece
+
+    if (auto dst = board->getPiece(dR,dC);
+        dst && dst->getIsWhite()==src->getIsWhite()) return 13; // own piece
+
+    if (!src->isValidMove(sR,sC,dR,dC,*board)) return 21; // piece-specific rule
+
+    // TODO: if you add king-in-check detection, return 41 here.
+    return 42;                                      // legal & safe
 }
 
 // ——— isCheckmate ———
 // checkmate: side to move is in check and has no legal replies
 bool GameManager::isCheckmate() const
 {
-    bool whiteToMove = (playerColor == "white");
+    bool whiteToMove = isWhiteTurn_;
     if (!board->inCheck(whiteToMove)) return false;
     auto legal = board->generateLegalMoves(whiteToMove);
     return legal.empty();
@@ -228,15 +179,8 @@ bool GameManager::isCheckmate() const
 // stalemate: side to move is not in check but has no legal replies
 bool GameManager::isStalemate() const
 {
-    bool whiteToMove = (playerColor == "white");
+    bool whiteToMove = isWhiteTurn_;
     if (board->inCheck(whiteToMove)) return false;
     auto legal = board->generateLegalMoves(whiteToMove);
     return legal.empty();
-}
-
-// ——— switchTurn ———
-// swap the two color‐strings so the other side moves next
-void GameManager::switchTurn()
-{
-    std::swap(playerColor, opponentColor);
 }

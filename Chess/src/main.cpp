@@ -11,10 +11,17 @@ int main()
 	Chess a(board);
 	int codeResponse = 0;
 	string res = a.getInput();
-	GameManager gm;
-	gm.initGame();
+	
 
-	int currentTurn = 0; // 0 for white, 1 for black
+
+	// chacking if ai recom works
+	// auto hints = AI::findBestMoves(gm.currentBoard(), true, 5);
+
+	// for(const auto& h: hints){
+	// 	std::cout << h << '\n';
+	// }
+
+	int currentTurn = 1; // 1 for white, 0 for black
 
 	while (res != "exit")
 	{
@@ -33,7 +40,7 @@ int main()
 		*/
 
 		/**/ 
-		codeResponse = gm.validateMove(res, currentTurn);
+		codeResponse = a.validateMoveViaManager(res);
 
 		// if turn was legal, switch turn
 		currentTurn = (currentTurn + 1) % 2; // switch turn

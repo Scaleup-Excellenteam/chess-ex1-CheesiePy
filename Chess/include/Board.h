@@ -4,12 +4,8 @@
 #include "Pieces/Piece.h"
 #include <memory>
 #include <vector>
-
-
-struct CMove {
-    int srcRow, srcCol;
-    int destRow, destCol;
-};
+#include "Utils/CMove.h"
+#include "Utils/MoveScorePair.h"
 
 
 
@@ -48,10 +44,15 @@ public:
 
     std::unique_ptr<Piece> removePiece(int row, int col);
     // generate leageal moves for the piece at (row, col)
-
-
-
     
 };
+
+// Forward declaration for AI namespace
+namespace AI
+{
+    using ::MoveScorePair;
+    std::vector<MoveScorePair>
+    findBestMoves(const Board& board, bool isWhite, int limit);
+}
 
 #endif // BOARD_H

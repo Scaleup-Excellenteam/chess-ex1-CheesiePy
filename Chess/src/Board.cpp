@@ -149,6 +149,8 @@ void Board::setPiece(int row, int col, std::unique_ptr<Piece> piece) {
 }
 
 std::unique_ptr<Piece> Board::removePiece(int row, int col) {
-    return std::move(grid[row][col]);
+    std::unique_ptr<Piece> old = std::move(grid[row][col]);
+    grid[row][col] = nullptr;
+    return old;
 }
 

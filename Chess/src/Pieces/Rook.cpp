@@ -4,31 +4,38 @@
 
 
 Rook::Rook(bool isWhite) : Piece(isWhite) {
-    char symbol = isWhite ? 'R' : 'r'; // Assign symbol based on color
+    char symbol = isWhite ? 'r' : 'R'; // Assign symbol based on color
     this->setSymbol(symbol); // Set the symbol for the piece
     this->setIsAlive(true); // Rook is alive when created
     this->setIsWhite(isWhite); // Set the color of the piece
 }
 
 
-bool Rook::isValidMove(int srcRow, int srcCol, int destRow, int destCol, const Board& board) const {
+bool Rook::isValidMove(int srcRow,
+                       int srcCol,
+                       int destRow,
+                       int destCol,
+                       const Board& board) const
+{
+    /* Must stay in same row or same column */
     if (srcRow != destRow && srcCol != destCol)
-        return false; // must move in straight lines
+        return false;
 
-    // Check path is clear
-    int rowStep = (destRow - srcRow == 0) ? 0 : (destRow - srcRow) / abs(destRow - srcRow);
-    int colStep = (destCol - srcCol == 0) ? 0 : (destCol - srcCol) / abs(destCol - srcCol);
+    /* Step direction */
+    int stepR = (destRow > srcRow) - (destRow < srcRow);  // 1,-1,0
+    int stepC = (destCol > srcCol) - (destCol < srcCol);
 
-    int row = srcRow + rowStep;
-    int col = srcCol + colStep;
-
-    while (row != destRow || col != destCol) {
-        if (board.getPiece(row, col) != nullptr)
-            return false; // path blocked
-        row += rowStep;
-        col += colStep;
+    /* Path must be clear (exclude destination square) */
+    for (int r = srcRow + stepR, c = srcCol + stepC;
+         r != destRow || c != destCol;
+         r += stepR,    c += stepC)
+    {
+        if (board.getPiece(r, c) != nullptr)
+            return false;
     }
 
-    // Valid rook move
-    return true;
+    /* Destination either empty or opponent piece */
+    const Piece* dst = board.getPiece(destRow, destCol);
+    return dst == nullptr || dst->getIsWhite() != this->getIsWhite();
 }
+

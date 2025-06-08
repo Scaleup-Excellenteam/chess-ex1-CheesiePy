@@ -1,10 +1,6 @@
-
 #include "GameManager.h"
 #include "AI/BestMoveFinder.h"
-
-
 #include "Chess.h"
-
 #include <iostream>
 #include <string>
 
@@ -172,6 +168,22 @@ void Chess::setPieces()
 #endif // WINDOWS
 
 
+void Chess::syncBoardStringWithBoard()
+{
+    m_boardString.clear();
+    m_boardString.reserve(64);
+
+    const Board& b = manager_.currentBoard();    // exposes the real board
+
+    for (int r = 0; r < 8; ++r)
+        for (int c = 0; c < 8; ++c)
+            if (const Piece* p = b.getPiece(r, c))
+                m_boardString.push_back(p->getSymbol());   // same char set we draw
+            else
+                m_boardString.push_back('#');
+}
+
+
 
 // print the only the board to screen 
 void Chess::show() const 
@@ -188,7 +200,7 @@ void Chess::displayBoard() const
 {
 	clear();
 	show();
-	cout << m_msg<< m_errorMsg;
+	cout << m_msg<< m_errorMsg << m_hint;
 	
 }
 
@@ -222,22 +234,29 @@ bool Chess::isExit() const
 // execute the movement on board 
 void Chess::excute()
 {
-	int row = (m_input[0] - 'a');
-	int col = (m_input[1] - '1');
-	char pieceInSource = m_boardString[(row * 8) + col]; 
-	m_boardString[(row * 8) + col] = '#'; 
+    /* 1 ── Convert algebraic chars to 0-based indices */
+    int srcRow = m_input[0] - 'a';
+    int srcCol = m_input[1] - '1';
+    int dstRow = m_input[2] - 'a';
+    int dstCol = m_input[3] - '1';
 
-	row = (m_input[2] - 'a');
-	col = (m_input[3] - '1');
-	m_boardString[(row * 8) + col] = pieceInSource; 
+    /* 2 ── Let the engine move the piece */
+    manager_.makeMove(srcRow, srcCol, dstRow, dstCol);
 
-	setPieces(); // set the new pieces on the board
+    /* 3 ── Rebuild the 64-char GUI string from the engine’s board */
+    m_boardString.assign(64, '#');           // fill with blanks
 
-	// update manager_ with the new board
-	std::string newBoardString = m_boardString;
-	manager_.makeMove(newBoardString);
+    const Board& board = manager_.currentBoard();
+    for (int r = 0; r < 8; ++r)
+        for (int c = 0; c < 8; ++c)
+            if (const Piece* p = board.getPiece(r, c))
+                m_boardString[r * 8 + c] = p->getSymbol();
 
+    /* 4 ── Redraw the ASCII board */
+    setPieces();
 }
+
+
 // check the response code and switch turn if needed 
 void Chess::doTurn()
 {
@@ -279,23 +298,46 @@ void Chess::doTurn()
 	case 41:
 	{
 		excute();
+		syncBoardStringWithBoard(); // sync the board string with the board
+		setPieces(); // set the pieces on the board
 		m_turn = !m_turn;
-		auto recs = AI::findBestMoves(manager_.currentBoard(), m_turn, 2);
-
-		    if (!recs.empty()) {
-        		cout << "Best move: " << recs.front().toString() << endl;
+		auto recs = AI::findBestMoves(manager_.currentBoard(), m_turn, 3);
+		if (!recs.empty()) {
+        	std::string hint = recs.front().toString();
+			if(m_turn){
+				for (char& c : hint) {
+					if ('A' <= c && c <= 'Z') {
+						c = std::tolower(c); // convert to lowercase for white pieces
+					}
 			}
+			m_hint = "Hint: " + hint + '\n';
+		}else {
+			m_hint.clear();
+		}
+	}
 		m_msg = "the last movement was legal and cause check \n";
 		break;
 	}
 	case 42:
 	{
 		excute();
+		syncBoardStringWithBoard(); // sync the board string with the board
+		setPieces(); // set the pieces on the board
 		m_turn = !m_turn;
-		auto recs = AI::findBestMoves(manager_.currentBoard(), m_turn, 2);
-		    if (!recs.empty()) {
-				cout << "Best move: " << recs.front().toString() << endl;
+		auto recs = AI::findBestMoves(manager_.currentBoard(), m_turn, 3);
+		if (!recs.empty()) {
+			std::string hint = recs.front().toString();
+			if (m_turn) {
+				for (char& c : hint) {
+					if ('A' <= c && c <= 'Z') {
+						c = std::tolower(c); // convert to lowercase for white pieces
+					}
+				}
 			}
+				m_hint = "Hint: " + hint + '\n';
+		}else {
+			m_hint.clear();
+		}
 
 		m_msg = "the last movement was legal \n";
 		break;
@@ -305,11 +347,13 @@ void Chess::doTurn()
 
 // C'tor
 Chess::Chess(const string& start)
-	: m_boardString(start),m_codeResponse(-1)
+	: m_boardString(start),m_codeResponse(-1), m_turn(true)
 {
 	setFrames();
-	setPieces();
+	//setPieces();
 	manager_.initGame();
+	syncBoardStringWithBoard(); // sync the board string with the board
+	setPieces(); // set the pieces on the board
 }
 
 // get the source and destination 
@@ -353,9 +397,15 @@ string Chess::getInput()
 }
 
 void Chess::setCodeResponse(int codeResponse)
+
 {
 	if (((11 <= codeResponse) && (codeResponse <= 13)) ||
 		((21 == codeResponse) || (codeResponse == 31)) ||
 		((41 == codeResponse) || (codeResponse == 42)))
 		m_codeResponse = codeResponse;
+}
+
+int Chess::validateMoveViaManager(const std::string& mv) const
+{
+    return manager_.validateMove(mv);   // uses the ONE true board
 }

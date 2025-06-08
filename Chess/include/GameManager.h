@@ -21,11 +21,11 @@ class GameManager
 {
     
 private:
-    Board* board; // Pointer to the chess board
+    std::unique_ptr<Board> board; // Pointer to the chess board
     std::vector<Piece*> pieces; // Store all pieces
+    bool isWhiteTurn_ = true; // True if it's white's turn, false for black
     int codeResponse;
-    std::string playerColor;
-    std::string opponentColor;
+
 
 public:
     GameManager();
@@ -38,15 +38,14 @@ public:
     std::string getInput();
     void displayBoard() const;
     void makeMove(const std::string& move);
+    bool makeMove(int srcRow, int srcCol, int destRow, int destCol);
+    int validateMove(const std::string &mv) const;
+    const Board &currentBoard() const { return *board; }
     bool isValidMove(const std::string& move) const;
     bool isCheckmate() const;
     bool isStalemate() const;
-    void switchTurn();
-    int validateMove(std::string input, int playerIsWhite); // Validate the move based on the input string
 
-    const Board& currentBoard() const { return *board; } // Get the current board state
-
-}
+    bool whiteToMove() const { return isWhiteTurn_; }
+};
 
 #endif // GAMEMANAGER_H
-;
