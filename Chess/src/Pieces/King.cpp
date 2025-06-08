@@ -1,4 +1,4 @@
-#include "King.h"
+#include "Pieces/King.h"
 #include "Board.h"
 #include <cmath> // for abs()
 

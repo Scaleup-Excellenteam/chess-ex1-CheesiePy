@@ -1,6 +1,6 @@
 #ifndef BISHOP_H
 #define BISHOP_H
-#include "Piece.h"
+#include "Pieces/Piece.h"
 #include <cmath> // for abs()
 #include "Board.h"
 

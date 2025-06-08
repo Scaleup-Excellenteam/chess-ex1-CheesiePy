@@ -1,6 +1,6 @@
 #ifndef PAWN_H
 #define PAWN_H
-#include "Piece.h"
+#include "Pieces/Piece.h"
 
 class Pawn : public Piece {
 public:

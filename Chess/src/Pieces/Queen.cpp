@@ -1,4 +1,4 @@
-#include "Queen.h"
+#include "Pieces/Queen.h"
 #include "Board.h"
 #include <cmath> // for abs()
 Queen::Queen(bool isWhite) : Piece(isWhite) {

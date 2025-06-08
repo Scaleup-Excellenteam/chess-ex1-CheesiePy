@@ -1,5 +1,5 @@
 #include "Board.h"
-#include "Pawn.h"
+#include "Pieces/Pawn.h"
 
 
 Board::Board() {

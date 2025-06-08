@@ -1,4 +1,4 @@
-#include "Pawn.h"
+#include "Pieces/Pawn.h"
 #include "Board.h"
 
 Pawn::Pawn(bool isWhite) : Piece(isWhite) {

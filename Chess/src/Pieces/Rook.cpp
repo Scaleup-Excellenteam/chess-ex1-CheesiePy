@@ -1,4 +1,4 @@
-#include "Rook.h"
+#include "Pieces/Rook.h"
 #include "Board.h"
 #include <cmath> // for abs()
 
