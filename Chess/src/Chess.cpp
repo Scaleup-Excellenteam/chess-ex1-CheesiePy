@@ -301,7 +301,7 @@ void Chess::doTurn()
 		syncBoardStringWithBoard(); // sync the board string with the board
 		setPieces(); // set the pieces on the board
 		m_turn = !m_turn;
-		auto recs = AI::findBestMoves(manager_.currentBoard(), m_turn, 3);
+		auto recs = AI::findBestMoves(manager_.currentBoard(), m_turn, 2);
 		if (!recs.empty()) {
         	std::string hint = recs.front().toString();
 			if(m_turn){

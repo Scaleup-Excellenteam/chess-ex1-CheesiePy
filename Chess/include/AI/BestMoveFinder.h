@@ -28,26 +28,35 @@ namespace AI
     {
     public:
         BestMoveFinder() = default;                    // trivial ctor
-
-        /** Return the single best move for the side to play. */
-        MoveScorePair findBestMove(const Board& board,
-                                   bool isWhite) const;
+        
+        
+        int getDefaultDepth() const { return DEFAULT_DEPTH; }
 
         /** Evaluate one move by the material it would capture (+score). */
         int evaluateMove(const Board& board,
                          const CMove& move) const;
+        
+        static int minimax(Board& board, int depth, int alpha, int beta, bool isMaximizing);
+
+        MoveScorePair findBestMove(const Board &board, bool isWhite) const;
+
+        /** How many plies to look ahead. */
+        static constexpr int DEFAULT_DEPTH = 3;
 
     private:
         /** Helper: convert piece symbol to a crude material value. */
         static int pieceValue(char symbol);
-    };
 
+        /** Evaluate entire board as (white material – black material). */
+        static int evaluateBoard(const Board& board);
+
+    };
+    
     /*----------------------------------------------------------------------
      * Helper used by Chess.cpp: return up to @p limit moves, sorted
      * best-first.  Pass limit == 0 to get *all* ranked moves.
      *--------------------------------------------------------------------*/
-    std::vector<MoveScorePair>
-    findBestMoves(const Board& board, bool isWhite, int limit);
+    std::vector<MoveScorePair> findBestMoves(const Board& board, bool isWhite, int limit);
 
 } // namespace AI
 

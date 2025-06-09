@@ -1,111 +1,201 @@
 #include "AI/BestMoveFinder.h"
+#include "Board.h"
+#include <algorithm>      // max, min, stable_sort
+#include <cctype>         // tolower, islower
+#include <climits>        // INT_MIN
+#include <limits>
+#include <vector>
 
+// ──────────────────────────────────────────────────────────────────────────
+// Helpers
+// ──────────────────────────────────────────────────────────────────────────
+static inline bool isWhitePiece(const Piece* p)
+{
+    return p && std::islower(static_cast<unsigned char>(p->getSymbol()));
+}
 
-#include <algorithm>   // std::stable_sort
-#include <cctype>      // std::tolower
-#include <climits>     // INT_MIN
+static std::vector<CMove> genMoves(const Board& b, bool wantWhite)
+{
+    std::vector<CMove> out;
+    out.reserve(128);
 
-/*  All symbols are defined inside namespace AI
- *  --------------------------------------------------------------*/
+    for (int r = 0; r < 8; ++r)
+        for (int c = 0; c < 8; ++c)
+        {
+            const Piece* pc = b.getPiece(r, c);
+            if (!pc || isWhitePiece(pc) != wantWhite)
+                continue;
+
+            for (const CMove& mv : pc->legalMoves(r, c, b))
+                out.push_back(mv);
+        }
+    return out;
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// namespace AI
+// ──────────────────────────────────────────────────────────────────────────
 namespace AI
 {
 
-/* --------------------------------------------------------------------------
- *  Helper: convert a piece symbol to a crude material score
- * --------------------------------------------------------------------------*/
-int BestMoveFinder::pieceValue(char symbol)
+// piece values ───────────────────────────────────────────────────────────
+int BestMoveFinder::pieceValue(char s)
 {
-    switch (std::tolower(static_cast<unsigned char>(symbol)))
+    switch (std::tolower(static_cast<unsigned char>(s)))
     {
-        case 'p': return 1;   // pawn
-        case 'n':             // knight
-        case 'b': return 3;   // bishop
-        case 'r': return 5;   // rook
-        case 'q': return 9;   // queen
-        default : return 0;   // king or empty square
+        case 'p': return 1;
+        case 'n':
+        case 'b': return 3;
+        case 'r': return 5;
+        case 'q': return 9;
+        default : return 0;
     }
 }
 
-/* --------------------------------------------------------------------------
- *  Evaluate a single move (captures only, depth-0)
- * --------------------------------------------------------------------------*/
-int BestMoveFinder::evaluateMove(const Board& board,
-                                 const CMove& move) const
+// capture-only quick eval (still used by old GUI traces) ─────────────────
+int BestMoveFinder::evaluateMove(const Board& b, const CMove& m) const
 {
-    const Piece* src = board.getPiece(move.srcRow,  move.srcCol);
-    const Piece* dst = board.getPiece(move.destRow, move.destCol);
+    const Piece* src = b.getPiece(m.srcRow,  m.srcCol);
+    const Piece* dst = b.getPiece(m.destRow, m.destCol);
 
-    if (!src || !dst || dst->getIsWhite() == src->getIsWhite())
-        return 0;                               // empty square or own piece
-
-    return pieceValue(dst->getSymbol());        // genuine capture
+    if (!src || !dst || isWhitePiece(src) == isWhitePiece(dst))
+        return 0;
+    return pieceValue(dst->getSymbol());
 }
-/* --------------------------------------------------------------------------
- *  Return the *single* best move for the side to play
- * --------------------------------------------------------------------------*/
-MoveScorePair BestMoveFinder::findBestMove(const Board& board,
-                                           bool          isWhite) const
+
+// static material eval ───────────────────────────────────────────────────
+int BestMoveFinder::evaluateBoard(const Board& b)
 {
-    MoveScorePair best{ CMove{}, INT_MIN };      // default “no-move” sentinel
-
-    for (int row = 0; row < 8; ++row)
-    {
-        for (int col = 0; col < 8; ++col)
+    int sum = 0;
+    for (int r = 0; r < 8; ++r)
+        for (int c = 0; c < 8; ++c)
         {
-            const Piece* piece = board.getPiece(row, col);
-            if (!piece || piece->getIsWhite() != isWhite)
-                continue;                         // empty or opponent piece
-
-            for (const CMove& mv : piece->legalMoves(row, col, board))
-            {
-                int score = evaluateMove(board, mv);
-                if (score > best.score)          // strictly better only
-                    best = { mv, score };
-            }
+            const Piece* p = b.getPiece(r, c);
+            if (!p) continue;
+            int v = pieceValue(p->getSymbol());
+            sum  += isWhitePiece(p) ?  v : -v;
         }
+    return sum;
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Minimax + αβ  (NO board copies – uses apply / undo)
+// ─────────────────────────────────────────────────────────────────────────
+int BestMoveFinder::minimax(Board& board,
+                            int depth,
+                            int alpha,
+                            int beta,
+                            bool sideToMove /*true = white*/)
+{
+    if (depth == 0)
+        return evaluateBoard(board);
+
+    auto moves = genMoves(board, sideToMove);
+    if (moves.empty())
+        return evaluateBoard(board);          // stalemate / mate
+
+    if (sideToMove)   // white (maximiser)
+    {
+        int best = std::numeric_limits<int>::min();
+        for (const CMove& mv : moves)
+        {
+            const Piece* dst = board.getPiece(mv.destRow, mv.destCol);
+            if (dst && isWhitePiece(dst))      // self-capture
+                continue;
+
+            board.applyMove(mv);
+            int val = minimax(board, depth - 1, alpha, beta, false);
+            board.undoMove(mv);
+
+            best  = std::max(best, val);
+            alpha = std::max(alpha, val);
+            if (beta <= alpha) break;          // β-cutoff
+        }
+        return best;
+    }
+    else              // black (minimiser)
+    {
+        int best = std::numeric_limits<int>::max();
+        for (const CMove& mv : moves)
+        {
+            const Piece* dst = board.getPiece(mv.destRow, mv.destCol);
+            if (dst && !isWhitePiece(dst))
+                continue;
+
+            board.applyMove(mv);
+            int val = minimax(board, depth - 1, alpha, beta, true);
+            board.undoMove(mv);
+
+            best  = std::min(best, val);
+            beta  = std::min(beta, val);
+            if (beta <= alpha) break;          // α-cutoff
+        }
+        return best;
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Root search helpers (hints / single best move)
+// ─────────────────────────────────────────────────────────────────────────
+MoveScorePair BestMoveFinder::findBestMove(const Board& board,
+                                           bool isWhite) const
+{
+    Board root = board;                        // one deep copy, kept intact
+    MoveScorePair best{ CMove{}, std::numeric_limits<int>::min() };
+
+    for (const CMove& mv : genMoves(root, isWhite))
+    {
+        const Piece* dst = root.getPiece(mv.destRow, mv.destCol);
+        if (dst && isWhitePiece(dst) == isWhite)   // own piece
+            continue;
+
+        root.applyMove(mv);
+        int score = minimax(root,
+                            DEFAULT_DEPTH - 1,
+                            std::numeric_limits<int>::min(),
+                            std::numeric_limits<int>::max(),
+                            !isWhite);
+        root.undoMove(mv);
+
+        if (score > best.score)
+            best = { mv, score };
     }
     return best;
 }
 
-/* --------------------------------------------------------------------------
- *  Collect and rank the top-N moves (used by Chess.cpp)
- * --------------------------------------------------------------------------*/
-std::vector<MoveScorePair>
-findBestMoves(const Board& board, bool isWhite, int limit)
+std::vector<MoveScorePair> findBestMoves(const Board& board,
+                                         bool isWhite,
+                                         int limit)
 {
-    std::vector<MoveScorePair> candidates;
-    candidates.reserve(128);                     // avoid reallocs
+    Board root = board;                        // single safe copy
+    std::vector<MoveScorePair> out;
+    out.reserve(128);
 
-    BestMoveFinder finder;                       // stateless helper
-
-    for (int row = 0; row < 8; ++row)
+    for (const CMove& mv : genMoves(root, isWhite))
     {
-        for (int col = 0; col < 8; ++col)
-        {
-            const Piece* piece = board.getPiece(row, col);
-            if (!piece || piece->getIsWhite() != isWhite)
-                continue;
+        const Piece* dst = root.getPiece(mv.destRow, mv.destCol);
+        if (dst && isWhitePiece(dst) == isWhite)
+            continue;
 
-            for (const CMove& mv : piece->legalMoves(row, col, board))
-            {
-                int score = finder.evaluateMove(board, mv);
-                candidates.push_back({ mv, score });
-            }
-        }
+        root.applyMove(mv);
+        int score = AI::BestMoveFinder::minimax(root,
+                                               AI::BestMoveFinder::DEFAULT_DEPTH - 1,
+                                               std::numeric_limits<int>::min(),
+                                               std::numeric_limits<int>::max(),
+                                               !isWhite);
+        root.undoMove(mv);
+
+        out.push_back({ mv, score });
     }
 
-    /* Sort best-score first; stable_sort keeps deterministic ordering
-       for moves with identical scores. */
-    std::stable_sort(candidates.begin(), candidates.end(),
-                     [](const MoveScorePair& a, const MoveScorePair& b)
-                     {
-                         return a.score > b.score;
-                     });
+    std::stable_sort(out.begin(), out.end(),
+                     [](auto const& a, auto const& b)
+                     { return a.score > b.score; });
 
-    if (limit > 0 && static_cast<int>(candidates.size()) > limit)
-        candidates.resize(limit);
+    if (limit > 0 && static_cast<int>(out.size()) > limit)
+        out.resize(limit);
 
-    return candidates;
+    return out;
 }
 
 } // namespace AI

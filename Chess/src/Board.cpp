@@ -1,156 +1,162 @@
 #include "Board.h"
 #include "Pieces/Pawn.h"
+#include <cassert>      // assert
 
+/* ───────────────────────────── Constructors ─────────────────────────── */
 
-Board::Board() {
-    grid.reserve(8); // optional but avoids reallocations
-    for (int i = 0; i < 8; ++i) {
-        grid.emplace_back(8); // each row has 8 null unique_ptrs
-    }
+Board::Board()
+{
+    grid.reserve(8);
+    for (int r = 0; r < 8; ++r)
+        grid.emplace_back(8);            // 8 null unique_ptrs
 }
 
-// --- copy constructor ---
-Board::Board(const Board& other) {
+/* deep copy (clone each Piece) */
+Board::Board(const Board& other)
+{
     grid.reserve(8);
-    // create an 8×8 grid of empty slots
     for (int r = 0; r < 8; ++r)
         grid.emplace_back(8);
 
-    // deep‐clone each piece via its virtual clone()
-    for (int r = 0; r < 8; ++r) {
-        for (int c = 0; c < 8; ++c) {
-            Piece* p = other.getPiece(r, c);
-            if (p)
+    for (int r = 0; r < 8; ++r)
+        for (int c = 0; c < 8; ++c)
+            if (const Piece* p = other.getPiece(r, c))
                 grid[r][c] = p->clone();
-        }
-    }
 }
 
-// --- copy assignment operator ---
-Board& Board::operator=(const Board& rhs) {
-    if (this != &rhs) {
-        // reset ourselves
-        grid.clear();
-        grid.reserve(8);
-        for (int r = 0; r < 8; ++r)
-            grid.emplace_back(8);
+/* copy-assignment */
+Board& Board::operator=(const Board& rhs)
+{
+    if (this == &rhs) return *this;
 
-        // deep‐clone each piece
-        for (int r = 0; r < 8; ++r) {
-            for (int c = 0; c < 8; ++c) {
-                Piece* p = rhs.getPiece(r, c);
-                if (p)
-                    grid[r][c] = p->clone();
-            }
-        }
-    }
+    grid.clear();
+    grid.reserve(8);
+    for (int r = 0; r < 8; ++r)
+        grid.emplace_back(8);
+
+    for (int r = 0; r < 8; ++r)
+        for (int c = 0; c < 8; ++c)
+            if (const Piece* p = rhs.getPiece(r, c))
+                grid[r][c] = p->clone();
+
+    history.clear();
     return *this;
 }
 
-// --- generate all legal moves for the given side (no self‐checks) ---
-std::vector<CMove> Board::generateLegalMoves(bool whiteToMove) const {
+/* ─────────────────────── AI helpers (pseudo-legal) ──────────────────── */
+
+std::vector<CMove> Board::generateLegalMoves(bool whiteToMove) const
+{
     std::vector<CMove> moves;
 
-    for (int r = 0; r < 8; ++r) {
-        for (int c = 0; c < 8; ++c) {
+    for (int r = 0; r < 8; ++r)
+        for (int c = 0; c < 8; ++c)
+        {
             Piece* p = getPiece(r, c);
-            if (!p || p->getIsWhite() != whiteToMove)
+            if (!p || p->getIsWhite() != whiteToMove)        // engine’s colour
                 continue;
 
-            for (int dr = 0; dr < 8; ++dr) {
-                for (int dc = 0; dc < 8; ++dc) {
-                    if (dr == r && dc == c) 
-                        continue;
+            for (int dr = 0; dr < 8; ++dr)
+                for (int dc = 0; dc < 8; ++dc)
+                {
+                    if (dr == r && dc == c) continue;
 
                     Piece* target = getPiece(dr, dc);
-                    bool valid = false;
+                    bool   ok     = false;
 
-                    // pawn: distinguish between move vs. capture
-                    if (Pawn* pawn = dynamic_cast<Pawn*>(p)) {
-                        if (!target && pawn->isValidMove(r, c, dr, dc, *this))
-                            valid = true;
-                        else if (target && pawn->isValidCapture(r, c, dr, dc, *this))
-                            valid = true;
-                    } 
-                    // all other pieces
-                    else if (p->isValidMove(r, c, dr, dc, *this)) {
-                        valid = true;
+                    if (auto* pawn = dynamic_cast<Pawn*>(p))
+                    {
+                        if (!target && pawn->isValidMove   (r,c,dr,dc,*this)) ok = true;
+                        if ( target && pawn->isValidCapture(r,c,dr,dc,*this)) ok = true;
                     }
+                    else if (p->isValidMove(r, c, dr, dc, *this))
+                        ok = true;
 
-                    if (!valid) 
-                        continue;
+                    if (!ok) continue;
 
-                    // simulate and ensure we don't leave our king in check
                     Board copy = *this;
-                    copy.applyMove({r, c, dr, dc});
+                    copy.applyMove({r,c,dr,dc});
                     if (!copy.inCheck(whiteToMove))
-                        moves.push_back({r, c, dr, dc});
+                        moves.emplace_back(r,c,dr,dc);
                 }
-            }
         }
-    }
-
     return moves;
 }
 
-// --- apply a move (mutates this Board) ---
-void Board::applyMove(CMove m) {
-    // take ownership of the moving piece
-    std::unique_ptr<Piece> moving = removePiece(m.srcRow, m.srcCol);
-    // overwrite any captured piece and place the mover
-    grid[m.destRow][m.destCol] = std::move(moving);
+/* ───────────────────────── apply / undo moves ──────────────────────── */
+
+void Board::applyMove(const CMove& m)
+{
+    auto& src = grid[m.srcRow ][m.srcCol ];
+    auto& dst = grid[m.destRow][m.destCol];
+
+    /* save captured piece (if any) */
+    history.push_back(MoveRecord{ m, std::move(dst) });
+
+    /* move piece */
+    dst = std::move(src);
 }
 
+void Board::undoMove(const CMove& m)
+{
+    assert(!history.empty() && "undoMove called on empty history!");
 
-// --- is the given side’s king in check? ---
-bool Board::inCheck(bool whiteKing) const {
-    // locate the king
-    int kingR = -1, kingC = -1;
-    char kingSym = whiteKing ? 'K' : 'k';
-    for (int r = 0; r < 8 && kingR < 0; ++r) {
-        for (int c = 0; c < 8; ++c) {
-            Piece* p = getPiece(r, c);
-            if (p && p->getSymbol() == kingSym) {
-                kingR = r; kingC = c;
-                break;
-            }
-        }
-    }
-    if (kingR < 0)
-        return false; // no king found => not in check
+    MoveRecord rec = std::move(history.back());
+    history.pop_back();
 
-    // see if any enemy piece attacks that square
-    for (int r = 0; r < 8; ++r) {
-        for (int c = 0; c < 8; ++c) {
-            Piece* p = getPiece(r, c);
-            if (p && p->getIsWhite() != whiteKing) {
-                // pawn captures are special
-                if (Pawn* pawn = dynamic_cast<Pawn*>(p)) {
-                    if (pawn->isValidCapture(r, c, kingR, kingC, *this))
+#ifndef NDEBUG
+    assert(rec.mv.srcRow  == m.srcRow  && rec.mv.srcCol  == m.srcCol &&
+           rec.mv.destRow == m.destRow && rec.mv.destCol == m.destCol);
+#endif
+
+    auto& src = grid[rec.mv.srcRow ][rec.mv.srcCol ];
+    auto& dst = grid[rec.mv.destRow][rec.mv.destCol];
+
+    src = std::move(dst);              // move piece back
+    dst = std::move(rec.captured);     // restore captured (if any)
+}
+
+/* ─────────────────────── check detection ───────────────────────────── */
+
+bool Board::inCheck(bool whiteKing) const
+{
+    /* locate king */
+    int kR=-1, kC=-1;
+    char kSym = whiteKing ? 'K':'k';
+
+    for (int r=0; r<8 && kR<0; ++r)
+        for (int c=0; c<8; ++c)
+            if (const Piece* p = getPiece(r,c); p && p->getSymbol()==kSym)
+            { kR=r; kC=c; break; }
+
+    if (kR<0) return false;            // missing king (!)
+
+    /* see if any opponent piece attacks it */
+    for (int r=0;r<8;++r)
+        for (int c=0;c<8;++c)
+            if (Piece* p = getPiece(r,c); p && p->getIsWhite()!=whiteKing)
+            {
+                if (auto* pawn = dynamic_cast<Pawn*>(p))
+                {
+                    if (pawn->isValidCapture(r,c,kR,kC,*this))
                         return true;
-                } else if (p->isValidMove(r, c, kingR, kingC, *this)) {
-                    return true;
                 }
+                else if (p->isValidMove(r,c,kR,kC,*this))
+                    return true;
             }
-        }
-    }
     return false;
 }
 
-Piece* Board::getPiece(int row, int col) const {
-    // Returns a raw pointer to the piece at the specified cell
-    return grid[row][col].get();
-}
+/* ─────────────────────── utility accessors ─────────────────────────── */
 
-void Board::setPiece(int row, int col, std::unique_ptr<Piece> piece) {
-    // This function takes ownership of the piece
-    // and places it in the specified cell of the grid.
-    grid[row][col] = std::move(piece);
-}
+Piece* Board::getPiece(int r,int c) const { return grid[r][c].get(); }
 
-std::unique_ptr<Piece> Board::removePiece(int row, int col) {
-    std::unique_ptr<Piece> old = std::move(grid[row][col]);
-    grid[row][col] = nullptr;
-    return old;
-}
+void Board::setPiece(int r,int c,std::unique_ptr<Piece> p)
+{ grid[r][c] = std::move(p); }
 
+std::unique_ptr<Piece> Board::removePiece(int r,int c)
+{
+    auto tmp = std::move(grid[r][c]);
+    grid[r][c]=nullptr;
+    return tmp;
+}
