@@ -27,7 +27,6 @@ add_executable(Chess
     src/Pieces/Knight.cpp
     src/Pieces/Pawn.cpp
     src/Pieces/King.cpp
-    src/Pieces/Pawn.cpp
     
     src/GameManager.cpp
     src/AI/BestMoveFinder.cpp

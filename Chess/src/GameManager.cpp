@@ -60,9 +60,6 @@ void GameManager::initGame()
 GameManager::~GameManager()
 {
     board.reset(); // Automatically cleans up the board and pieces
-    for (Piece* piece : pieces) {
-        delete piece; // Clean up each piece
-    }
     pieces.clear(); // Clear the vector of pieces
 }
 

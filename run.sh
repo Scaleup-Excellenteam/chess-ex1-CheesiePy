@@ -33,10 +33,11 @@ cmake --build "$BUILD_DIR" --parallel "$JOBS"
 #    (Works for Ninja/Unix Makefiles and MSVC multi-config generators)
 ##############################################################################
 exe_path=""
+args=("$@")  # Capture any additional arguments passed to the script
 
 # Single-config generators (Ninja, Makefiles) place it right in $BUILD_DIR
 if [[ -x "$BUILD_DIR/Chess" ]]; then
-    exe_path="$BUILD_DIR/Chess"
+    exe_path="$BUILD_DIR/Chess" #
 elif [[ -x "$BUILD_DIR/Chess.exe" ]]; then
     exe_path="$BUILD_DIR/Chess.exe"
 else
@@ -53,6 +54,7 @@ if [[ -z "$exe_path" ]]; then
     exit 1
 fi
 
-# echo "▶️  Running $exe_path ..."
-# exec "$exe_path"
-# echo "✅  Build and run completed successfully."
+echo "▶️  Running $exe_path ..."
+# If additional arguments were passed, append them to the
+exec "$exe_path" "${args[@]}"
+echo "✅  Build and run completed successfully."

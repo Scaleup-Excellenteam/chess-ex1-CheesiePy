@@ -303,18 +303,18 @@ void Chess::doTurn()
 		m_turn = !m_turn;
 		auto recs = AI::findBestMoves(manager_.currentBoard(), m_turn, 2);
 		if (!recs.empty()) {
-        	std::string hint = recs.front().toString();
-			if(m_turn){
-				for (char& c : hint) {
-					if ('A' <= c && c <= 'Z') {
-						c = std::tolower(c); // convert to lowercase for white pieces
-					}
-			}
-			m_hint = "Hint: " + hint + '\n';
-		}else {
-			m_hint.clear();
+		    std::string hint = recs.front().toString();
+		    if(m_turn){
+		        for (char& c : hint) {
+		            if ('A' <= c && c <= 'Z') {
+		                c = std::tolower(c); // convert to lowercase for white pieces
+		            }
+		    	}
+		    }
+		    m_hint = "Hint: " + hint + '\n';
+		} else {
+		    m_hint.clear();
 		}
-	}
 		m_msg = "the last movement was legal and cause check \n";
 		break;
 	}

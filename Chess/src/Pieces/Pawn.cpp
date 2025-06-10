@@ -30,12 +30,14 @@ bool Pawn::isValidMove(int sR,int sC,int dR,int dC,const Board& b) const
 bool Pawn::isValidCapture(int srcRow, int srcCol, int destRow, int destCol, const Board& board) const {
     // Check if the move is diagonal
     if (this->getIsWhite()) {
-        if (destRow == srcRow + 1 && (destCol == srcCol - 1 || destCol == srcCol + 1)) {
+        // White pawns move "up" the board (higher to lower row index)
+        if (destRow == srcRow - 1 && (destCol == srcCol - 1 || destCol == srcCol + 1)) {
             Piece* destPiece = board.getPiece(destRow, destCol);
             return destPiece != nullptr && !destPiece->getIsWhite(); // Capture opponent's piece
         }
     } else {
-        if (destRow == srcRow - 1 && (destCol == srcCol - 1 || destCol == srcCol + 1)) {
+        // Black pawns move "down" the board (lower to higher row index)
+        if (destRow == srcRow + 1 && (destCol == srcCol - 1 || destCol == srcCol + 1)) {
             Piece* destPiece = board.getPiece(destRow, destCol);
             return destPiece != nullptr && destPiece->getIsWhite(); // Capture opponent's piece
         }
