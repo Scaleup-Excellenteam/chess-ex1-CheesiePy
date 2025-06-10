@@ -1,37 +1,40 @@
 #include "Utils/ThreadPool.h"
 
-ThreadPool::ThreadPool(size_t threads) : stop(false) {
-    for (size_t i = 0; i < threads; ++i) {
+ThreadPool::ThreadPool(size_t threads)
+{
+    for (size_t i = 0; i < threads; ++i)
+    {
         workers.emplace_back([this] {
-            while (true) {
+            for (;;)
+            {
                 std::function<void()> task;
 
-                // Scoped lock and condition wait
-                {
-                    std::unique_lock<std::mutex> lock(this->queue_mutex);
-                    this->condition.wait(lock, [this] {
-                        return this->stop || !this->tasks.empty();
-                    });
-                    if (this->stop && this->tasks.empty())
-                        return;
-                    task = std::move(this->tasks.front());
-                    this->tasks.pop();
-                }
+                {   // --- critical section -----------------------------
+                    std::unique_lock<std::mutex> lock(queue_mutex);
+                    condition.wait(lock,
+                        [this]{ return stop || !tasks.empty(); });
 
-                // Execute the task
-                task();
+                    if (stop && tasks.empty())
+                        return;                 // graceful exit
+
+                    task = std::move(tasks.front());
+                    tasks.pop();
+                }   // --- lock released here ---------------------------
+
+                task();                         // run user work
             }
         });
     }
 }
 
-ThreadPool::~ThreadPool() {
-    {
-        std::unique_lock<std::mutex> lock(queue_mutex);
+ThreadPool::~ThreadPool()
+{
+    {   // signal all threads to stop
+        std::lock_guard<std::mutex> lock(queue_mutex);
         stop = true;
     }
     condition.notify_all();
-    for (std::thread &worker : workers)
-        worker.join();
-}
 
+    for (std::thread& t : workers)
+        if (t.joinable()) t.join();
+}

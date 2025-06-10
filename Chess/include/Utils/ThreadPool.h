@@ -7,6 +7,7 @@
 #include <condition_variable>
 #include <functional>
 #include <future>
+#include <atomic>
 
 class ThreadPool {
 public:
@@ -24,7 +25,7 @@ private:
 
     std::mutex queue_mutex;
     std::condition_variable condition;
-    bool stop;
+    std::atomic<bool> stop{false};
 };
 
 // Enqueue task into the pool
