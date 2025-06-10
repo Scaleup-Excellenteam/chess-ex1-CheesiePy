@@ -64,11 +64,14 @@ int main()
     ThreadPool pool{4};
 
     std::vector<std::future<void>> futs;
-    for (int i = 0; i < 10; ++i)
-        futs.push_back(pool.enqueue([i]{
-            std::cout << "task " << i << " on thread "
-                      << std::this_thread::get_id() << '\n';
-        }));
-
-    for (auto& f : futs) f.get();
+    for (int i = 0; i < 10; ++i){
+		futs.push_back(
+			pool.enqueue(
+				[i]{std::cout << "task " << i << " on thread " << std::this_thread::get_id() << '\n';}
+			)
+		);
+	}
+	for (auto& f : futs){ 
+		f.get(); 
+	}
 }
