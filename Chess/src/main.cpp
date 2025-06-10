@@ -1,145 +1,144 @@
-// Chess 
 #include <iostream>
 #include <string>
-#include <thread>
-#include <cstdlib>      // std::strtol
-#include <iostream>
-#include <string>
+#include <vector>
+#include <chrono>   // Required for timing the benchmark
+#include <memory>   // Required for std::unique_ptr
 
-#include "Utils/ThreadPoolSingleton.h"     
-#include "AI/BestMoveFinder.h"      
-#include "GameManager.h"
 #include "Chess.h"
+#include "GameManager.h"
+#include "AI/BestMoveFinder.h"
+#include "Utils/ThreadPool.h"
 
+// Forward-declaration for our new benchmark function
+void runBenchmark(int numThreads, int searchDepth);
 
-/* ───────── simple CLI helper ───────── */
-static std::size_t argToSize(const char* s, std::size_t fallback)
+// A placeholder for a single-threaded version of your findBestMoves function.
+// You will need to implement this logic based on your AI.
+// This version should NOT use a thread pool.
+std::vector<MoveScorePair> findBestMoves_single_threaded(const Board& board, bool isWhite, int limit, int depth)
 {
-    if (!s) return fallback;
-    char* end{};
-    long v = std::strtol(s, &end, 10);
-    return (end != s && v > 0) ? static_cast<std::size_t>(v) : fallback;
+    // This is a placeholder implementation.
+    // You should copy your sequential AI logic here.
+    // This is the version that will be used when numThreads == 0.
+    Board root = board;
+    std::vector<MoveScorePair> out;
+    // ... (Your sequential move generation and minimax calls go here)
+    return out;
 }
 
-int main(int argc, char* argv[])
+
+int main()
 {
+    int searchDepth;
+    int gameMode;
 
-	    std::size_t threadCount = std::thread::hardware_concurrency();   // default
-    int depthOverride       = -1;
+    // Per the PDF requirements, get user input for search depth and game mode
+    std::cout << "Enter search depth (e.g., 3 or 4): ";
+    std::cin >> searchDepth;
 
-    for (int i = 1; i < argc; ++i)
+    std::cout << "Select mode (1 for Interactive, 2 for Benchmark): ";
+    std::cin >> gameMode;
+
+    if (gameMode == 1)
     {
-        if (std::string(argv[i]) == "--threads" && i + 1 < argc)
-            threadCount = argToSize(argv[++i], threadCount);
-        else if (std::string(argv[i]) == "--depth" && i + 1 < argc)
-            depthOverride = static_cast<int>(argToSize(argv[++i], 0));
-        else if (std::string(argv[i]) == "--help")
+        // The original interactive game loop
+        std::cout << "Starting interactive game..." << std::endl;
+        Chess game; // Uses the default board setup
+        std::string res = game.getInput();
+
+        while (res != "exit" && res != "quit")
         {
-            std::cout << "Usage: Chess [--threads N] [--depth D]\n";
-            return 0;
+            int codeResponse = game.validateMoveViaManager(res);
+            game.setCodeResponse(codeResponse);
+            res = game.getInput();
         }
+        std::cout << std::endl << "Exiting." << std::endl;
+    }
+    else if (gameMode == 2)
+    {
+        // The new benchmark mode
+        std::cout << "\n--- Running Benchmark (8 moves per test) ---" << std::endl;
+        
+        // Run the benchmark for each thread count required by the PDF
+        runBenchmark(0, searchDepth);  // Special case for single-threaded baseline
+        runBenchmark(2, searchDepth);
+        runBenchmark(4, searchDepth);
+        runBenchmark(8, searchDepth);
+
+        std::cout << "\nBenchmark complete. Please record these results in your README.md" << std::endl;
+    }
+    else
+    {
+        std::cout << "Invalid mode selected." << std::endl;
     }
 
-    /*FIRST (and only) construction of the pool */
-    globalPool(threadCount);
-
-    // /* optional depth override */
-    // if (depthOverride > 0)
-    //     AI::BestMoveFinder::DEFAULT_DEPTH = depthOverride;
-
-
-	string board = "RNBQKBNRPPPPPPPP################################pppppppprnbqkbnr"; 
-//	string board = "##########K###############################R#############r#r#####";
-	Chess a(board);
-	int codeResponse = 0;
-	string res = a.getInput();
-	
-
-
-	// chacking if ai recom works
-	// auto hints = AI::findBestMoves(gm.currentBoard(), true, 5);
-
-	// for(const auto& h: hints){
-	// 	std::cout << h << '\n';
-	// }
-
-	int currentTurn = 1; // 1 for white, 0 for black
-
-	while (res != "exit")
-	{
-		/* 
-		codeResponse value : 
-		Illegal movements : 
-		11 - there is not piece at the source  
-		12 - the piece in the source is piece of your opponent
-		13 - there one of your pieces at the destination 
-		21 - illegal movement of that piece 
-		31 - this movement will cause you checkmate
-
-		legal movements : 
-		41 - the last movement was legal and cause check 
-		42 - the last movement was legal, next turn 
-		*/
-
-		/**/ 
-		codeResponse = a.validateMoveViaManager(res);
-
-		// if turn was legal, switch turn
-		currentTurn = (currentTurn + 1) % 2; // switch turn
-
-
-		a.setCodeResponse(codeResponse);
-		res = a.getInput(); 
-	}
-
-	cout << endl << "Exiting " << endl; 
-	return 0;
+    return 0;
 }
 
+/**
+ * @brief Runs an automatic 8-move game to measure the performance of the AI.
+ * @param numThreads The number of threads to use in the thread pool. 0 means single-threaded.
+ * @param searchDepth The search depth for the minimax algorithm.
+ */
+void runBenchmark(int numThreads, int searchDepth)
+{
+    std::cout << "\n------------------------------------------\n";
+    std::cout << "--- Testing with " << numThreads << " threads and depth " << searchDepth << " ---" << std::endl;
+    std::cout << "------------------------------------------\n";
 
+    GameManager game; // Create a fresh game state for the test
+    long long totalDuration_ms = 0;
+    const int numMovesToPlay = 8; // The PDF specifies an 8-move automatic game
 
+    for (int i = 0; i < numMovesToPlay; ++i)
+    {
+        const bool isWhiteTurn = game.whiteToMove();
+        std::cout << "Move " << i + 1 << " (" << (isWhiteTurn ? "White" : "Black") << "): ";
 
-// smoke test for ThreadPool
-//#include "Utils/ThreadPool.h"
-// int main()
-// {
-//     ThreadPool pool{4};
+        // Start the timer
+        const auto startTime = std::chrono::high_resolution_clock::now();
 
-//     std::vector<std::future<void>> futs;
-//     for (int i = 0; i < 10; ++i){
-// 		futs.push_back(
-// 			pool.enqueue(
-// 				[i]{std::cout << "task " << i << " on thread " << std::this_thread::get_id() << '\n';}
-// 			)
-// 		);
-// 	}
-// 	for (auto& f : futs){ 
-// 		f.get(); 
-// 	}
-// }
+        std::vector<MoveScorePair> bestMoves;
 
+        if (numThreads == 0)
+        {
+            // For 0 threads, run the sequential version of the algorithm
+            bestMoves = findBestMoves_single_threaded(game.currentBoard(), isWhiteTurn, 1, searchDepth);
+        }
+        else
+        {
+            // For 2, 4, or 8 threads, use your multithreaded function
+            ThreadPool pool(numThreads);
+            // NOTE: You will need to adapt your findBestMoves function to accept the pool and depth
+            // For example: bestMoves = AI::findBestMoves(game.currentBoard(), isWhiteTurn, 1, pool, searchDepth);
 
-// #include "Utils/ThreadPool.h"
-// #include "Utils/SafeMovePQ.h"
-// #include <iostream>
+            // Using the user-provided code structure as a base:
+            // This assumes findBestMoves is refactored to take a pool and depth.
+             bestMoves = AI::findBestMoves(game.currentBoard(), isWhiteTurn, 1);
+        }
 
-// int main()
-// {
-//     ThreadPool pool{4};
-//     SafeMovePQ q;
+        // Stop the timer
+        const auto endTime = std::chrono::high_resolution_clock::now();
+        const auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
+        
+        totalDuration_ms += duration;
+        
 
-//     /* launch 8 worker tasks pushing scored moves */
-//     for (int i = 0; i < 8; ++i)
-//         pool.enqueue([i, &q]{
-//             for (int j = 0; j < 5; ++j)
-//                 q.push({CMove{}, i*10 + j});   // dummy moves
-//         });
+        if (bestMoves.empty())
+        {
+            std::cout << "Game over (Checkmate or Stalemate)." << std::endl;
+            break;
+        }
 
-//     pool.enqueue([&q]{ q.push({CMove{}, 999}); });  // clearly best
+        // Print results for the current move
+        std::cout << bestMoves[0].toString() << " | Time: " << duration << "ms" << std::endl;
 
-//     /* wait implicitly in pool dtor (main returns) */
-//     /* pop all */
-//     while (!q.empty())
-//         if (auto item = q.try_pop(); item)
-//             std::cout << "popped " << item->score << '\n';
-// }
+        // Automatically play the best move to advance the game state
+        const CMove move = bestMoves[0].move;
+        game.makeMove(move.srcRow, move.srcCol, move.destRow, move.destCol);
+    }
+
+    std::cout << "------------------------------------------\n";
+    std::cout << "Average time per move: " << totalDuration_ms / static_cast<double>(numMovesToPlay) << "ms\n";
+    std::cout << "------------------------------------------\n";
+}
