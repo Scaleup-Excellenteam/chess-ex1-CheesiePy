@@ -122,7 +122,7 @@ bool Board::inCheck(bool whiteKing) const
 {
     /* locate king */
     int kR=-1, kC=-1;
-    char kSym = whiteKing ? 'K':'k';
+    char kSym = whiteKing ? 'k':'K';
 
     for (int r=0; r<8 && kR<0; ++r)
         for (int c=0; c<8; ++c)
