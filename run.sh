@@ -53,6 +53,6 @@ if [[ -z "$exe_path" ]]; then
     exit 1
 fi
 
-echo "▶️  Running $exe_path ..."
-exec "$exe_path"
-echo "✅  Build and run completed successfully."
+# echo "▶️  Running $exe_path ..."
+# exec "$exe_path"
+# echo "✅  Build and run completed successfully."

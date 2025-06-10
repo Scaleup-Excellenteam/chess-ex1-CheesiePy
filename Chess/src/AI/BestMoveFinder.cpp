@@ -5,7 +5,8 @@
 #include <climits>        // INT_MIN
 #include <limits>
 #include <vector>
-
+#include "Utils/ThreadPoolSingleton.h"   // globalPool()
+#include "Utils/SafeMovePQ.h"
 // ──────────────────────────────────────────────────────────────────────────
 // Helpers
 // ──────────────────────────────────────────────────────────────────────────
@@ -163,38 +164,72 @@ MoveScorePair BestMoveFinder::findBestMove(const Board& board,
     return best;
 }
 
-std::vector<MoveScorePair> findBestMoves(const Board& board,
-                                         bool isWhite,
-                                         int limit)
+std::vector<MoveScorePair>
+findBestMoves(const Board& board, bool isWhite, int limit)
 {
-    Board root = board;                        // single safe copy
-    std::vector<MoveScorePair> out;
-    out.reserve(128);
+    /* 1. fully-legal root moves from Board */
+    std::vector<CMove> all = board.generateLegalMoves(isWhite);
 
-    for (const CMove& mv : genMoves(root, isWhite))
+    /* ——— NEW ——— filter out moves whose source piece is the wrong colour */
+    std::vector<CMove> rootMoves;
+    rootMoves.reserve(all.size());
+    for (const CMove& mv : all)
     {
-        const Piece* dst = root.getPiece(mv.destRow, mv.destCol);
-        if (dst && isWhitePiece(dst) == isWhite)
-            continue;
+        const Piece* src = board.getPiece(mv.srcRow, mv.srcCol);
+        if (src && isWhitePiece(src) == isWhite)          // keep only true side
+            rootMoves.push_back(mv);
+    }
+    if (rootMoves.empty()) return {};
+    /* ——— END NEW ——— */
 
-        root.applyMove(mv);
-        int score = AI::BestMoveFinder::minimax(root,
-                                               AI::BestMoveFinder::DEFAULT_DEPTH - 1,
+    /* 2. bucket by source square (≤64 buckets) */
+    std::array<std::vector<CMove>, 64> buckets;
+    for (const CMove& mv : rootMoves)
+        buckets[mv.srcRow * 8 + mv.srcCol].push_back(mv);
+
+    /* 3. parallel scoring on the global pool */
+    SafeMovePQ pq;
+    std::vector<std::future<void>> futs;
+
+    for (const auto& bucket : buckets)
+    {
+        if (bucket.empty()) continue;
+
+        futs.emplace_back(
+            globalPool().enqueue([&, bucket] {
+                Board local = board;
+                BestMoveFinder finder;
+
+
+                for (const CMove& mv : bucket)
+                {
+                    const Piece* dst = local.getPiece(mv.destRow, mv.destCol);
+                    if (dst && (symIsWhite(dst->getSymbol()) == isWhite))  // own piece
+                        continue;  // skip self-captures
+                    local.applyMove(mv);
+                    int score = finder.minimax(local,
+                                               BestMoveFinder::DEFAULT_DEPTH - 1,
                                                std::numeric_limits<int>::min(),
                                                std::numeric_limits<int>::max(),
                                                !isWhite);
-        root.undoMove(mv);
+                    local.undoMove(mv);
 
-        out.push_back({ mv, score });
+                    pq.push({ mv, score });
+                }
+            })
+        );
     }
 
-    std::stable_sort(out.begin(), out.end(),
-                     [](auto const& a, auto const& b)
-                     { return a.score > b.score; });
+    for (auto& f : futs) f.get();                 // 4. wait workers
 
-    if (limit > 0 && static_cast<int>(out.size()) > limit)
-        out.resize(limit);
-
+    std::vector<MoveScorePair> out;               // 5. pop best K
+    out.reserve(limit > 0 ? limit : rootMoves.size());
+    while ((limit <= 0 || static_cast<int>(out.size()) < limit))
+    {
+        auto best = pq.try_pop();
+        if (!best) break;
+        out.push_back(*best);
+    }
     return out;
 }
 

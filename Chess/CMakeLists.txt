@@ -32,6 +32,7 @@ add_executable(Chess
     src/GameManager.cpp
     src/AI/BestMoveFinder.cpp
     src/Utils/ThreadPool.cpp
+    src/Utils/ThreadPoolSingleton.cpp
 )
 
 
