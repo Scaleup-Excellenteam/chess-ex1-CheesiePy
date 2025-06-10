@@ -64,13 +64,10 @@ std::vector<CMove> Board::generateLegalMoves(bool whiteToMove) const
                     Piece* target = getPiece(dr, dc);
                     bool   ok     = false;
 
-                    if (auto* pawn = dynamic_cast<Pawn*>(p))
+                    if (p->isValidMove(r, c, dr, dc, *this))
                     {
-                        if (!target && pawn->isValidMove   (r,c,dr,dc,*this)) ok = true;
-                        if ( target && pawn->isValidCapture(r,c,dr,dc,*this)) ok = true;
-                    }
-                    else if (p->isValidMove(r, c, dr, dc, *this))
                         ok = true;
+                    }
 
                     if (!ok) continue;
 
