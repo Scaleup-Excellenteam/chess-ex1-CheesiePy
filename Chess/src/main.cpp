@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 #include "GameManager.h"
-#include "Utils/ThreadPool.h"
+
 
 // // int main()
 // {
@@ -59,19 +59,46 @@
 
 
 // smoke test for ThreadPool
+//#include "Utils/ThreadPool.h"
+// int main()
+// {
+//     ThreadPool pool{4};
+
+//     std::vector<std::future<void>> futs;
+//     for (int i = 0; i < 10; ++i){
+// 		futs.push_back(
+// 			pool.enqueue(
+// 				[i]{std::cout << "task " << i << " on thread " << std::this_thread::get_id() << '\n';}
+// 			)
+// 		);
+// 	}
+// 	for (auto& f : futs){ 
+// 		f.get(); 
+// 	}
+// }
+
+
+#include "Utils/ThreadPool.h"
+#include "Utils/SafeMovePQ.h"
+#include <iostream>
+
 int main()
 {
     ThreadPool pool{4};
+    SafeMovePQ q;
 
-    std::vector<std::future<void>> futs;
-    for (int i = 0; i < 10; ++i){
-		futs.push_back(
-			pool.enqueue(
-				[i]{std::cout << "task " << i << " on thread " << std::this_thread::get_id() << '\n';}
-			)
-		);
-	}
-	for (auto& f : futs){ 
-		f.get(); 
-	}
+    /* launch 8 worker tasks pushing scored moves */
+    for (int i = 0; i < 8; ++i)
+        pool.enqueue([i, &q]{
+            for (int j = 0; j < 5; ++j)
+                q.push({CMove{}, i*10 + j});   // dummy moves
+        });
+
+    pool.enqueue([&q]{ q.push({CMove{}, 999}); });  // clearly best
+
+    /* wait implicitly in pool dtor (main returns) */
+    /* pop all */
+    while (!q.empty())
+        if (auto item = q.try_pop(); item)
+            std::cout << "popped " << item->score << '\n';
 }
