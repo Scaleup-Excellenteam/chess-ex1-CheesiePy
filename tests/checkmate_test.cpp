@@ -19,10 +19,10 @@ void run_fools_mate_test() {
     // 1. White pawn (g6->f6), Black pawn (b5->d5)
     // 2. White pawn (g7->e7), Black Queen (a4->e8) for checkmate
     const std::vector<std::string> moves = {
-        "g6f6",
-        "B5D5",
-        "g7e7",
-        "A4E8"
+        "f2f3",
+        "E7E5",
+        "g2g4",
+        "D8H4"
     };
 
     for (const auto& move_str : moves) {

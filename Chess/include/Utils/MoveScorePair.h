@@ -15,12 +15,16 @@ struct MoveScorePair
     {
         auto sq = [](int row, int col) -> std::string
         {
-            char rowLetter = 'A' + row;   // 0→A
-            char colDigit  = '1' + col;   // 0→1
-            return {rowLetter, colDigit};
+            // --- CORRECTED FORMATTING LOGIC ---
+            // Column (0-7) becomes file ('a'-'h')
+            char fileChar = 'a' + col;
+            // Row (0-7) becomes rank ('8'-'1')
+            char rankChar = '1' + (7 - row);
+            // --- END CORRECTION ---
+            return {fileChar, rankChar};
         };
-        return sq(move.srcRow,move.srcCol) +
-               sq(move.destRow,move.destCol) +
+        return sq(move.srcRow, move.srcCol) +
+               sq(move.destRow, move.destCol) +
                " (+" + std::to_string(score) + ")";
     }
 };
