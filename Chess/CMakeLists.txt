@@ -11,7 +11,6 @@ endif ()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Windows-specific compile options
 if (MSVC)
     add_compile_options(/W4 /permissive- /Zc:externConstexpr /Zc:inline)
 endif ()
@@ -54,3 +53,15 @@ add_executable(run_check_test
     ../tests/check_test.cpp
 )
 target_link_libraries(run_check_test PRIVATE ChessLogic)
+
+# --- 6. Define the castling test executable ---
+add_executable(run_castling_test
+    ../tests/castling_test.cpp
+)
+target_link_libraries(run_castling_test PRIVATE ChessLogic)
+
+
+# Explicitly tell each test target where to find the headers.
+target_include_directories(run_tests PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
+target_include_directories(run_check_test PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
+target_include_directories(run_castling_test PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)

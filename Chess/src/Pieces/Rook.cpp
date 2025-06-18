@@ -3,7 +3,7 @@
 #include <cmath> // for abs()
 
 
-Rook::Rook(bool isWhite) : Piece(isWhite) {
+Rook::Rook(bool isWhite) : Piece(isWhite), hasMoved_(false) {
     char symbol = isWhite ? 'r' : 'R'; // Assign symbol based on color
     this->setSymbol(symbol); // Set the symbol for the piece
     this->setIsAlive(true); // Rook is alive when created

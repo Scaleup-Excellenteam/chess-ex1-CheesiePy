@@ -1,5 +1,7 @@
 #include "Board.h"
 #include "Pieces/Pawn.h"
+#include "Pieces/King.h"
+#include "Pieces/Rook.h"
 #include <cassert>      // assert
 
 /* ───────────────────────────── Constructors ─────────────────────────── */
@@ -53,7 +55,7 @@ std::vector<CMove> Board::generateLegalMoves(bool whiteToMove) const
         for (int c = 0; c < 8; ++c)
         {
             Piece* p = getPiece(r, c);
-            if (!p || p->getIsWhite() != whiteToMove)        // engine’s colour
+            if (!p || p->getIsWhite() != whiteToMove)        // engine's colour
                 continue;
 
             for (int dr = 0; dr < 8; ++dr)
@@ -92,6 +94,15 @@ void Board::applyMove(const CMove& m)
 
     /* move piece */
     dst = std::move(src);
+
+    // Track hasMoved for King and Rook
+    if (dst) {
+        if (auto* king = dynamic_cast<King*>(dst.get())) {
+            king->setHasMoved(true);
+        } else if (auto* rook = dynamic_cast<Rook*>(dst.get())) {
+            rook->setHasMoved(true);
+        }
+    }
 }
 
 void Board::undoMove(const CMove& m)

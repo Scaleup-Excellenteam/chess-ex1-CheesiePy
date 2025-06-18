@@ -28,6 +28,10 @@ elif [[ "$ARGUMENT" == "check" ]]; then
     # Run the check test
     echo "▶️  Running Check Condition test..."
     exec "$BUILD_DIR/run_check_test"
+elif [[ "$ARGUMENT" == "castling" ]]; then
+    # Run the new castling test
+    echo "▶️  Running Castling test..."
+    exec "$BUILD_DIR/run_castling_test"
 else
     # Run the main game by default
     echo "▶️  Running main game..."

@@ -3,7 +3,7 @@
 #include <cmath> // for abs()
 
 
-King::King(bool isWhite) : Piece(isWhite) {
+King::King(bool isWhite) : Piece(isWhite), hasMoved_(false) {
     char symbol = isWhite ? 'k' : 'K'; // Assign symbol based on color
     bool isAlive = true; // King is alive when created
     this->setSymbol(symbol); // Set the symbol for the piece
