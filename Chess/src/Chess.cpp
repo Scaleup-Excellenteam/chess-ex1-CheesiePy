@@ -243,7 +243,7 @@ void Chess::excute()
     /* 2 ── Let the engine move the piece */
     manager_.makeMove(srcRow, srcCol, dstRow, dstCol);
 
-    /* 3 ── Rebuild the 64-char GUI string from the engine’s board */
+    /* 3 ── Rebuild the 64-char GUI string from the engine's board */
     m_boardString.assign(64, '#');           // fill with blanks
 
     const Board& board = manager_.currentBoard();
@@ -260,12 +260,10 @@ void Chess::excute()
 // check the response code and switch turn if needed 
 void Chess::doTurn()
 {
-
 	int srcRow = (m_input[0] - 'a');
 	int srcCol = (m_input[1] - '1');
 	int destRow = (m_input[2] - 'a');
 	int destCol = (m_input[3] - '1');
-
 
 	m_errorMsg = "\n"; 
 	switch (m_codeResponse)
@@ -301,6 +299,14 @@ void Chess::doTurn()
 		syncBoardStringWithBoard(); // sync the board string with the board
 		setPieces(); // set the pieces on the board
 		m_turn = !m_turn;
+
+		// Check for checkmate after the move
+		if (manager_.isCheckmate()) {
+			m_msg = (!m_turn ? "Checkmate! White wins!\n" : "Checkmate! Black wins!\n");
+			m_hint.clear();
+			break;
+		}
+
 		auto recs = AI::findBestMoves(manager_.currentBoard(), m_turn, 2);
 		if (!recs.empty()) {
 		    std::string hint = recs.front().toString();
@@ -324,6 +330,14 @@ void Chess::doTurn()
 		syncBoardStringWithBoard(); // sync the board string with the board
 		setPieces(); // set the pieces on the board
 		m_turn = !m_turn;
+
+		// Check for checkmate after the move
+		if (manager_.isCheckmate()) {
+			m_msg = (!m_turn ? "Checkmate! White wins!\n" : "Checkmate! Black wins!\n");
+			m_hint.clear();
+			break;
+		}
+
 		auto recs = AI::findBestMoves(manager_.currentBoard(), m_turn, 3);
 		if (!recs.empty()) {
 			std::string hint = recs.front().toString();
@@ -367,6 +381,12 @@ string Chess::getInput()
 		doTurn(); 
 
 	displayBoard();
+
+	// Check if the game is over due to checkmate
+	if (manager_.isCheckmate()) {
+		return "exit";
+	}
+
 	showAskInput();
 
 	cin >> m_input;
