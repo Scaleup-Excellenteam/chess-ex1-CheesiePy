@@ -24,6 +24,8 @@ class Chess {
 	string m_hint = "\n";
 	int m_codeResponse;
 	GameManager manager_;
+	bool m_isComputerGame = false;
+	bool m_isComputerBlack = true;  // Computer plays as black by default
 
 
 
@@ -39,12 +41,14 @@ class Chess {
 	bool isExit() const;
 	void excute();
 	void doTurn();
+	bool isComputerTurn() const { return m_isComputerGame && m_turn != m_isComputerBlack; }
+	void makeComputerMove();
 	// return game manager instance
 	GameManager& getGameManager() { return manager_; }
 
 
 public:
-	Chess(const string& start = "RNBQKBNRPPPPPPPP################################pppppppprnbqkbnr");
+	Chess(bool isComputerGame = false);
 	Chess(const Chess&)=delete;
 	Chess& operator=(const Chess&) = delete;
 	string getInput();

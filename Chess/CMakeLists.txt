@@ -69,9 +69,15 @@ add_executable(run_draw_test
 )
 target_link_libraries(run_draw_test PRIVATE ChessLogic)
 
+# --- 8. Define the pvc test executable ---
+add_executable(run_pvc_test
+    ../tests/pvc_test.cpp
+)
+target_link_libraries(run_pvc_test PRIVATE ChessLogic)
 
 
 target_include_directories(run_tests PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
 target_include_directories(run_check_test PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
 target_include_directories(run_castling_test PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
 target_include_directories(run_draw_test PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
+target_include_directories(run_pvc_test PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)

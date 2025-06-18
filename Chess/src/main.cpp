@@ -26,7 +26,6 @@ std::vector<MoveScorePair> findBestMoves_single_threaded(const Board& board, boo
     return out;
 }
 
-
 int main()
 {
     int searchDepth;
@@ -36,14 +35,18 @@ int main()
     std::cout << "Enter search depth (e.g., 3 or 4): ";
     std::cin >> searchDepth;
 
-    std::cout << "Select mode (1 for Interactive, 2 for Benchmark): ";
+    std::cout << "Select mode:\n";
+    std::cout << "1. Player vs Player\n";
+    std::cout << "2. Player vs Computer\n";
+    std::cout << "3. Benchmark\n";
+    std::cout << "Enter choice (1-3): ";
     std::cin >> gameMode;
 
-    if (gameMode == 1)
+    if (gameMode == 1 || gameMode == 2)
     {
-        // The original interactive game loop
-        std::cout << "Starting interactive game..." << std::endl;
-        Chess game; // Uses the default board setup
+        // Interactive game loop
+        std::cout << "Starting " << (gameMode == 1 ? "Player vs Player" : "Player vs Computer") << " game...\n";
+        Chess game(gameMode == 2); // Pass true for Player vs Computer mode
         std::string res = game.getInput();
 
         while (res != "exit" && res != "quit")
@@ -54,9 +57,9 @@ int main()
         }
         std::cout << std::endl << "Exiting." << std::endl;
     }
-    else if (gameMode == 2)
+    else if (gameMode == 3)
     {
-        // The new benchmark mode
+        // The benchmark mode
         std::cout << "\n--- Running Benchmark (8 moves per test) ---" << std::endl;
         
         // Run the benchmark for each thread count required by the PDF

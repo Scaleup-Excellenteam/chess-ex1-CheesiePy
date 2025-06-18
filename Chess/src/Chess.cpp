@@ -210,10 +210,14 @@ void Chess::displayBoard() const
 
 void Chess::showAskInput() const
 {
-	if (m_turn)
-		cout << "Player 1 (White - Small letters) >> ";
-	else
-		cout << "Player 2 (Black - Capital letters) >> ";
+	if (m_isComputerGame) {
+		cout << "Your move (White - Small letters) >> ";
+	} else {
+		if (m_turn)
+			cout << "Player 1 (White - Small letters) >> ";
+		else
+			cout << "Player 2 (Black - Capital letters) >> ";
+	}
 }
 
 bool Chess::isSame() const
@@ -311,13 +315,42 @@ void Chess::doTurn()
 }
 
 // C'tor
-Chess::Chess(const string& start)
-	: m_boardString(start),m_codeResponse(-1), m_turn(true)
+Chess::Chess(bool isComputerGame)
+	: m_boardString("RNBQKBNRPPPPPPPP################################pppppppprnbqkbnr"),
+	  m_codeResponse(-1), 
+	  m_turn(true),
+	  m_isComputerGame(isComputerGame)
 {
 	setFrames();
 	manager_.initGame();
 	syncBoardStringWithBoard();
 	setPieces();
+}
+
+void Chess::makeComputerMove()
+{
+    // Get the best move from the AI
+    auto bestMoves = AI::findBestMoves(manager_.currentBoard(), m_turn, 1);
+    if (!bestMoves.empty()) {
+        const CMove& aiMove = bestMoves[0].move;
+        // Convert move to string format
+        string moveStr;
+        moveStr += (char)('a' + aiMove.srcCol);
+        moveStr += (char)('1' + (7 - aiMove.srcRow));
+        moveStr += (char)('a' + aiMove.destCol);
+        moveStr += (char)('1' + (7 - aiMove.destRow));
+        
+        // Display the computer's move
+        m_input = moveStr;
+        cout << "Computer plays: " << moveStr << endl;
+        
+        // Validate and execute the move
+        m_codeResponse = validateMoveViaManager(moveStr);
+        doTurn();
+    } else {
+        // No valid moves - should be handled by stalemate/checkmate checks
+        m_msg = "Computer has no valid moves.\n";
+    }
 }
 
 // get the source and destination
@@ -331,6 +364,13 @@ string Chess::getInput()
 		doTurn();
 
 	displayBoard();
+
+    // If it's computer's turn, make the move and return
+    if (isComputerTurn()) {
+        makeComputerMove();
+        return m_input;
+    }
+
 	showAskInput();
 
 	cin >> m_input;
