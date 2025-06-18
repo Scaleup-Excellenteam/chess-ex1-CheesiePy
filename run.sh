@@ -21,17 +21,18 @@ cmake --build "$BUILD_DIR" --parallel "$(nproc || sysctl -n hw.ncpu || echo 1)"
 ARGUMENT="${1:-game}" # Default to 'game' if no argument is provided
 
 if [[ "$ARGUMENT" == "test" ]]; then
-    # Run the checkmate test
     echo "▶️  Running Checkmate test..."
     exec "$BUILD_DIR/run_tests"
 elif [[ "$ARGUMENT" == "check" ]]; then
-    # Run the check test
     echo "▶️  Running Check Condition test..."
     exec "$BUILD_DIR/run_check_test"
 elif [[ "$ARGUMENT" == "castling" ]]; then
-    # Run the new castling test
     echo "▶️  Running Castling test..."
     exec "$BUILD_DIR/run_castling_test"
+elif [[ "$ARGUMENT" == "draw" ]]; then
+    # Run the new draw test
+    echo "▶️  Running Draw Condition test..."
+    exec "$BUILD_DIR/run_draw_test"
 else
     # Run the main game by default
     echo "▶️  Running main game..."

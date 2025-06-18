@@ -61,7 +61,17 @@ add_executable(run_castling_test
 target_link_libraries(run_castling_test PRIVATE ChessLogic)
 
 
-# Explicitly tell each test target where to find the headers.
+
+
+# --- 7. Define the draw condition test executable ---
+add_executable(run_draw_test
+    ../tests/draw_test.cpp
+)
+target_link_libraries(run_draw_test PRIVATE ChessLogic)
+
+
+
 target_include_directories(run_tests PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
 target_include_directories(run_check_test PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
 target_include_directories(run_castling_test PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
+target_include_directories(run_draw_test PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)

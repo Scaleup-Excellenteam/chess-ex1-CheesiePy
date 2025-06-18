@@ -294,6 +294,18 @@ void Chess::doTurn()
 		} else {
 			m_msg = "Legal move.\n";
 		}
+
+        // Check for draw conditions
+        if (manager_.isStalemate()) {
+            m_msg = "Draw by stalemate!\n";
+            displayBoard();
+            exit(0);
+        }
+        if (manager_.isFiftyMoveDraw()) {
+            m_msg = "Draw by fifty-move rule!\n";
+            displayBoard();
+            exit(0);
+        }
 		break;
 	}
 }

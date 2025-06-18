@@ -57,8 +57,17 @@ void GameManager::makeMove(const std::string& move)
         int dC = move[2] - 'a';
         int sR = 7 - (move[1] - '1');
         int dR = 7 - (move[3] - '1');
+        Piece* srcPiece = board->getPiece(sR, sC);
+        Piece* dstPiece = board->getPiece(dR, dC);
+        bool isPawnMove = srcPiece && (dynamic_cast<Pawn*>(srcPiece) != nullptr);
+        bool isCapture = dstPiece != nullptr;
         std::unique_ptr<Piece> tmp = board->removePiece(sR, sC);
         board->setPiece(dR, dC, std::move(tmp));
+        if (isPawnMove || isCapture) {
+            resetFiftyMoveCounter();
+        } else {
+            incrementFiftyMoveCounter();
+        }
         isWhiteTurn_ = !isWhiteTurn_;
     }
 }

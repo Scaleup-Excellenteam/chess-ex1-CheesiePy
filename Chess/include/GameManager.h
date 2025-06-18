@@ -15,6 +15,7 @@ private:
     std::vector<Piece*> pieces;
     bool isWhiteTurn_ = true;
     int codeResponse;
+    int fiftyMoveCounter_ = 0;
 
 public:
     GameManager();
@@ -34,6 +35,11 @@ public:
 
     const Board& currentBoard() const;
     bool whiteToMove() const;
+
+    int getFiftyMoveCounter() const { return fiftyMoveCounter_; }
+    void resetFiftyMoveCounter() { fiftyMoveCounter_ = 0; }
+    void incrementFiftyMoveCounter() { ++fiftyMoveCounter_; }
+    bool isFiftyMoveDraw() const { return fiftyMoveCounter_ >= 100; }
 };
 
 #endif // GAMEMANAGER_H
