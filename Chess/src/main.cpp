@@ -46,7 +46,7 @@ int main()
     {
         // Interactive game loop
         std::cout << "Starting " << (gameMode == 1 ? "Player vs Player" : "Player vs Computer") << " game...\n";
-        Chess game(gameMode == 2); // Pass true for Player vs Computer mode
+        Chess game(gameMode == 2);
         std::string res = game.getInput();
 
         while (res != "exit" && res != "quit")
@@ -54,6 +54,14 @@ int main()
             int codeResponse = game.validateMoveViaManager(res);
             game.setCodeResponse(codeResponse);
             res = game.getInput();
+
+            // ---- ADD THIS BLOCK FOR PVC MODE ----
+            if (gameMode == 2 && res.empty()) {
+                // The computer has moved, getInput() returned an empty string.
+                // Now, we need to get the next player's input to continue the loop.
+                res = game.getInput();
+            }
+            // ---- END OF ADDED BLOCK ----
         }
         std::cout << std::endl << "Exiting." << std::endl;
     }
