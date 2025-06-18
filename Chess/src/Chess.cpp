@@ -237,12 +237,21 @@ bool Chess::isExit() const
 
 void Chess::excute()
 {
-    // This function is only called on a valid move, so we just need to update the board.
-    // The actual move is now handled by the GameManager using the validated string.
-    // We just sync the GUI state.
-    manager_.makeMove(m_input);
+    // --- START OF CORRECTION ---
+    // This function is called after a move has been validated.
+    // We convert the coordinates using the standard system and pass them to the GameManager.
+    int srcCol = m_input[0] - 'a';
+    int dstCol = m_input[2] - 'a';
+    int srcRow = 7 - (m_input[1] - '1');
+    int dstRow = 7 - (m_input[3] - '1');
+
+    // Let the engine make the move using the correct integer coordinates
+    manager_.makeMove(srcRow, srcCol, dstRow, dstCol);
+
+    // Sync the GUI with the new board state
     syncBoardStringWithBoard();
     setPieces();
+    // --- END OF CORRECTION ---
 }
 
 
@@ -266,18 +275,17 @@ void Chess::doTurn()
 	case 31:
 		m_msg = "Invalid move: This would leave your king in check.\n";
 		break;
-	case 41:
-	case 42:
-		// The move was valid, so we execute it.
-		excute();
+	case 41: // Legal move that caused a check
+	case 42: // Legal move
+		excute(); // Execute the move and update the GUI
 		m_turn = !m_turn; // Switch turns
 
         // Update hint for the next player
-		auto recs = AI::findBestMoves(manager_.currentBoard(), m_turn, 3);
+		auto recs = AI::findBestMoves(manager_.currentBoard(), m_turn, 2);
 		if (!recs.empty()) {
-			m_hint = "Hint: " + recs.front().toString() + '\n';
+		    m_hint = "Hint: " + recs.front().toString() + '\n';
 		} else {
-			m_hint.clear();
+		    m_hint.clear();
 		}
 
         // Set the message based on whether it was a check or not.
@@ -290,8 +298,9 @@ void Chess::doTurn()
 	}
 }
 
+// C'tor
 Chess::Chess(const string& start)
-	: m_boardString(start), m_codeResponse(-1), m_turn(true)
+	: m_boardString(start),m_codeResponse(-1), m_turn(true)
 {
 	setFrames();
 	manager_.initGame();
@@ -299,9 +308,11 @@ Chess::Chess(const string& start)
 	setPieces();
 }
 
+// get the source and destination
 string Chess::getInput()
 {
 	static bool isFirst = true;
+
 	if (isFirst)
 		isFirst = false;
 	else
@@ -311,7 +322,6 @@ string Chess::getInput()
 	showAskInput();
 
 	cin >> m_input;
-
     // Standardize input to lowercase
     for (char& c : m_input) {
         c = std::tolower(c);
