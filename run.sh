@@ -36,6 +36,14 @@ elif [[ "$ARGUMENT" == "pvc" ]]; then
     # Run the new pvc test
     echo "▶️  Running Player vs. Computer test..."
     exec "$BUILD_DIR/run_pvc_test"
+elif [[ "$ARGUMENT" == "all_tests" ]]; then
+    echo "▶️  Running all tests..."
+    "$BUILD_DIR/run_tests"
+    "$BUILD_DIR/run_check_test"
+    "$BUILD_DIR/run_castling_test"
+    "$BUILD_DIR/run_draw_test"
+    "$BUILD_DIR/run_pvc_test"
+    echo "✅ All tests completed."
 else
     # Run the main game by default
     echo "▶️  Running main game..."

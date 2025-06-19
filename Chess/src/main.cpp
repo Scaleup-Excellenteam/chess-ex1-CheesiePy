@@ -49,20 +49,26 @@ int main()
         Chess game(gameMode == 2);
         std::string res = game.getInput();
 
+        // --- Replace the old while loop with this one ---
         while (res != "exit" && res != "quit")
         {
+            // If `res` is empty, the computer just moved. We skip validation
+            // and call getInput() again to get the human player's move.
+            if (gameMode == 2 && res.empty()) {
+                res = game.getInput();
+                continue;
+            }
+
+            // If we are here, `res` contains a move from the human player.
+            // Validate it and set the response for the next turn.
             int codeResponse = game.validateMoveViaManager(res);
             game.setCodeResponse(codeResponse);
+            
+            // This call will process the player's move, then potentially the
+            // computer's move, and finally return an empty string.
             res = game.getInput();
-
-            // ---- ADD THIS BLOCK FOR PVC MODE ----
-            if (gameMode == 2 && res.empty()) {
-                // The computer has moved, getInput() returned an empty string.
-                // Now, we need to get the next player's input to continue the loop.
-                res = game.getInput();
-            }
-            // ---- END OF ADDED BLOCK ----
         }
+        
         std::cout << std::endl << "Exiting." << std::endl;
     }
     else if (gameMode == 3)

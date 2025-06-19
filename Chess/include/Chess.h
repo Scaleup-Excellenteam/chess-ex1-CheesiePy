@@ -45,7 +45,7 @@ class Chess {
 	void makeComputerMove();
 	// return game manager instance
 	GameManager& getGameManager() { return manager_; }
-
+	
 
 public:
 	Chess(bool isComputerGame = false);
@@ -54,4 +54,5 @@ public:
 	string getInput();
 	void setCodeResponse(int codeResponse);
     int validateMoveViaManager(const std::string &mv) const;
+	bool whiteToMove() const { return manager_.whiteToMove(); }
 };

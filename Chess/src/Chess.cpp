@@ -347,6 +347,9 @@ void Chess::makeComputerMove()
         // Validate and execute the move
         m_codeResponse = validateMoveViaManager(moveStr);
         doTurn();
+        
+        // After the move is done, reset the code. This prevents the next turn from re-processing it.
+        setCodeResponse(-1); 
     } else {
         // No valid moves - should be handled by stalemate/checkmate checks
         m_msg = "Computer has no valid moves.\n";
@@ -365,10 +368,10 @@ string Chess::getInput()
 
 	displayBoard();
 
-    // If it's computer's turn, make the move and return
+    // If it's computer's turn, make the move and return an empty string
     if (isComputerTurn()) {
         makeComputerMove();
-        return m_input;
+        return "";
     }
 
 	showAskInput();
