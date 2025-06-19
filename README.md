@@ -1,7 +1,6 @@
-
 # C++ Multithreaded Chess AI 🤖
 
-> A powerful command-line chess engine featuring a smart AI opponent that uses C++ multithreading to find the best move with incredible speed.
+Welcome to a classic game of chess with a modern twist! This project brings the timeless strategy game to your command line, powered by a C++ engine. It handles all game logic, from piece movement to validating complex states like check and checkmate. The standout feature is the intelligent AI opponent that uses a multithreaded minimax algorithm to find the optimal move, making for a challenging and responsive gameplay experience.
 
 <div align="center">
     <img src="https://img.shields.io/badge/Language-C++-blue.svg" alt="Language C++">
@@ -10,191 +9,197 @@
     <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License MIT">
 </div>
 
-
------
+---
 
 ## 📚 Table of Contents
 
-  * [🎯 Project Overview](https://www.google.com/search?q=%23-project-overview)
-  * [🚀 Key Features](https://www.google.com/search?q=%23-key-features)
-  * [🛠️ Environment Setup](https://www.google.com/search?q=%23%EF%B8%8F-environment-setup)
-  * [⚙️ Build & Run Instructions](https://www.google.com/search?q=%23%EF%B8%8F-build--run-instructions)
-  * [📁 Project Structure](https://www.google.com/search?q=%23-project-structure)
-  * [🧠 Multithreading Architecture](https://www.google.com/search?q=%23-multithreading-architecture)
-  * [📊 Benchmark Results](https://www.google.com/search?q=%23-benchmark-results)
+- [C++ Multithreaded Chess AI 🤖](#c-multithreaded-chess-ai-)
+  - [📚 Table of Contents](#-table-of-contents)
+  - [⚙️ How to Build \& Run](#️-how-to-build--run)
+    - [Using the Run Script (Recommended)](#using-the-run-script-recommended)
+    - [Manual Build \& Run](#manual-build--run)
+  - [📁 Project Folder Structure](#-project-folder-structure)
+  - [✨ Implemented Rules \& Features](#-implemented-rules--features)
+    - [Chess Rules](#chess-rules)
+    - [Application Features](#application-features)
+  - [🧠 The Computer Player: AI Algorithm Explained](#-the-computer-player-ai-algorithm-explained)
+    - [Minimax Algorithm](#minimax-algorithm)
+    - [Alpha-Beta Pruning](#alpha-beta-pruning)
+    - [Multithreading Architecture](#multithreading-architecture)
+  - [🧪 Testing Strategy](#-testing-strategy)
+  - [🧗 Biggest Challenge Faced](#-biggest-challenge-faced)
+  - [🚀 Future Improvements](#-future-improvements)
 
------
+---
 
-## 🎯 Project Overview
+## ⚙️ How to Build & Run
 
-Welcome to a classic game of chess with a modern twist\! This project brings the timeless strategy game to your command line, powered by a C++ engine. It handles all game logic, from piece movement to validating complex states like check and checkmate.
+This project is designed for a Linux-based environment (including WSL for Windows). Ensure you have `g++`, `cmake`, and `make` installed.
 
-The standout feature is the intelligent AI opponent. It doesn't just play random moves; it analyzes the board using the **minimax algorithm** and leverages a **custom multithreaded architecture** to find the optimal move, making for a challenging and responsive gameplay experience.
+### Using the Run Script (Recommended)
 
-## 🚀 Key Features
+The easiest way to build and run the project is by using the provided shell script.
 
-  * ♟️ **Complete Chess Logic**: Implements all standard FIDE chess rules for piece movement, captures, and special moves.
-  * 🤖 **Intelligent AI Opponent**: Features a game AI built on the minimax algorithm to evaluate board states and make strategic decisions.
-  * ⚡ **High-Performance Multithreading**: The AI's move calculation is heavily parallelized using a custom thread pool, leveraging multi-core processors for a significant performance boost.
-  * 🔒 **Thread-Safe by Design**: Employs `std::mutex` to protect shared data structures, ensuring that move results from different threads are collected safely and without race conditions.
-  * 🕹️ **Dual Game Modes**: Includes a standard **Interactive Mode** for player-vs-AI gameplay and an automatic **Benchmark Mode** to measure the performance of the multithreaded engine.
+1.  **Give execute permissions to the script:**
+    ```bash
+    chmod +x run.sh
+    ```
+2.  **Run the game:**
+    ```bash
+    ./run.sh
+    ```
+    This will compile the project and start the main game in Player vs. Computer mode.
 
-## 🛠️ Environment Setup
+### Manual Build & Run
 
-This project is designed for a Linux-based environment (including WSL for Windows). Ensure you have the following tools installed:
+If you prefer to build the project manually, follow these steps:
 
-  * `g++` (GNU C++ Compiler)
-  * `cmake`
-  * `make`
+1.  **Create a build directory:**
+    ```bash
+    mkdir -p build
+    ```
+2.  **Configure the project with CMake:**
+    ```bash
+    cmake -S Chess -B build
+    ```
+3.  **Compile the source code:**
+    ```bash
+    cmake --build build
+    ```
+4.  **Run the game executable:**
+    ```bash
+    ./build/Chess
+    ```
+After running, the application will prompt you to choose between Player vs Player, Player vs Computer, and Benchmark modes.
 
-You can install these dependencies on an Ubuntu system with a single command:
+---
 
-```sh
-sudo apt update
-sudo apt install -y g++ cmake make
-```
-
-## ⚙️ Build & Run Instructions
-
-Compiling and running the project is straightforward thanks to CMake. Open your terminal in the project's root directory and follow these steps:
-
-you can try running this script
-```sh
-./run.sh
-```
-
-if its not working properly please let me know 
-and try this:
-
-```sh
-# 1. Create a build directory to keep things clean
-mkdir -p build
-
-# 2. Navigate into the new directory
-cd build
-
-# 3. Configure the project using CMake
-cmake ..
-# if the build folder is in the same place as the Chess folder try 
-cmake ../Chess/
-
-# 4. Compile the source code into an executable
-make
-
-# 5. Run the game!
-./Chess
-```
-
-> After running, the application will prompt you to enter the desired AI search depth and to choose between Interactive and Benchmark modes.
-
-## 📁 Project Structure
+## 📁 Project Folder Structure
 
 The codebase is organized into a clean, modular architecture to separate concerns and improve maintainability.
 
 ```
-Chess/
-├── include/                  # Public headers for all classes
-│   ├── AI/
-│   ├── Pieces/
-│   └── Utils/
-├── src/                      # Source code implementation files
-│   ├── AI/
-│   ├── Pieces/
-│   └── Utils/
-├── CMakeLists.txt            # Root build configuration
-└── ...
+.
+├── Chess/                  # Main project directory
+│   ├── include/            # Public headers
+│   │   ├── AI/             # AI-related headers
+│   │   ├── Pieces/         # Piece class headers
+│   │   └── Utils/          # Utility headers (ThreadPool, CMove, etc.)
+│   ├── src/                # Source code implementation
+│   │   ├── AI/             # AI algorithm implementation
+│   │   ├── Pieces/         # Piece-specific logic
+│   │   └── Utils/          # Utility implementations
+│   ├── main.cpp            # Entry point for the application
+│   └── CMakeLists.txt      # Build configuration for the game
+├── docs/                   # Project documentation
+│   └── ARCHITECTURE.md     # Detailed architecture overview
+├── tests/                  # C++ test files
+│   ├── checkmate_test.cpp
+│   ├── castling_test.cpp
+│   └── ...
+├── run.sh                  # Script to build and run the game/tests
+└── README.md               # This file
 ```
 
-## 🧠 Multithreading Architecture
+---
 
-To improve the AI's response time, this project parallelizes the most computationally expensive task: finding the best move.
+## ✨ Implemented Rules & Features
 
-#### Work Division
+This project implements a robust set of chess rules and application features:
 
-When it's the AI's turn, the engine first generates all possible legal moves. These moves are then grouped into "buckets," where each bucket contains all the moves for a single piece.
+### Chess Rules
+-   **Standard Piece Movement**: All pieces (Pawn, Rook, Knight, Bishop, Queen, King) move according to FIDE rules.
+-   **Captures**: Pieces can capture opponent pieces.
+-   **Check and Checkmate**: The game correctly identifies when a King is in check and detects checkmate to end the game.
+-   **Stalemate**: The game recognizes a stalemate condition, resulting in a draw.
+-   **Pawn Promotion**: Pawns are promoted to a Queen upon reaching the opposite end of the board. (Implicitly handled by replacing piece, user does not choose).
+-   **Castling**: Both kingside and queenside castling are implemented, with checks to ensure it is a legal move (i.e., neither the King nor the Rook has moved, and the King is not in check).
+-   **Fifty-Move Rule**: The game ends in a draw if 50 consecutive moves are made by each player without a capture or a pawn move.
 
-#### Parallel Calculation
+### Application Features
+-   **Player vs. Player Mode**: Two human players can play against each other.
+-   **Player vs. Computer Mode**: A human can play against the multithreaded AI.
+-   **ASCII-based UI**: A clean and functional command-line interface to display the board and interact with the game.
+-   **Move Validation**: Robust input validation to ensure only legal moves are made.
+-   **Benchmark Mode**: An automated mode to measure the performance of the AI with a varying number of threads (0, 2, 4, 8).
 
-A **ThreadPool** dispatches each bucket to a different worker thread. The threads run in parallel, with each one executing the minimax algorithm on its assigned set of moves to calculate a score.
+---
 
-#### Synchronization
+## 🧠 The Computer Player: AI Algorithm Explained
 
-As threads complete their analysis, they push the results (the move and its score) into a shared, thread-safe priority queue. This custom queue, `SafeMovePQ`, uses a **`std::mutex`** to lock the data structure during write operations, preventing race conditions and ensuring data integrity. The main thread can then safely pull the highest-scoring move from the queue.
+The AI opponent is the core of this project, designed to be a challenging adversary. Its decision-making is based on the **Minimax algorithm with Alpha-Beta Pruning**, and its performance is accelerated through **multithreading**.
 
-This architecture effectively turns a long, sequential process into a rapid, parallel search.
+### Minimax Algorithm
+Minimax is a recursive algorithm used in two-player, zero-sum games. It explores a tree of all possible moves to a certain depth.
+-   The **Maximizing** player (our AI) tries to find the move that leads to the highest possible score.
+-   The **Minimizing** player (the opponent) is assumed to play optimally, always choosing the move that leads to the lowest score for the AI.
 
------
+The score is determined by a static **evaluation function** (`evaluateBoard`), which calculates the material advantage on the board. Each piece has a value (Pawn=1, Knight/Bishop=3, Rook=5, Queen=9), and the function returns the difference between the total value of the AI's pieces and the opponent's pieces.
 
-## 📊 Benchmark Results
+### Alpha-Beta Pruning
+To make the search more efficient, we use **Alpha-Beta Pruning**. This optimization safely prunes large parts of the search tree that don't need to be explored because a better move has already been found.
+-   **Alpha**: The best score found so far for the maximizing player.
+-   **Beta**: The best score found so far for the minimizing player.
 
-This section documents the performance of the `findBestMoves` function over an 8-move automatic game, using a search depth of **[Your Search Depth]**.
+If the algorithm finds a move for the minimizing player that is worse than the maximizer's current best option (i.e., `beta <= alpha`), it stops exploring that branch.
 
-| Number of Threads | Average Time per Move (ms) |
-| :---------------: | :------------------------: |
-|         0 (Sequential)         |      **[Your Result]** |
-|         2         |      **[Your Result]** |
-|         4         |      **[Your Result]** |
-|         8         |      **[Your Result]** |
+### Multithreading Architecture
+The most computationally expensive part of the AI is exploring the initial set of moves from the current board state. To speed this up, the work is parallelized:
+1.  **Work Division**: All legal moves for the AI are generated. These moves are then grouped into "buckets," with each bucket containing the moves for a single piece.
+2.  **Parallel Calculation**: A custom `ThreadPool` dispatches each bucket to a separate worker thread. Each thread independently runs the minimax algorithm on its assigned moves to calculate a score for each move.
+3.  **Synchronization**: The results (move and score) from each thread are pushed into a shared, thread-safe priority queue (`SafeMovePQ`). This queue uses a `std::mutex` to ensure that results are added safely without race conditions. The main thread then retrieves the highest-scoring move from the queue.
 
-### Analysis
+This architecture significantly reduces the time the AI takes to decide on a move, creating a much more fluid gameplay experience.
 
+---
+
+## 🧪 Testing Strategy
+
+The project's correctness is ensured through a suite of automated tests. These tests are written in C++ and are located in the `tests/` directory.
+
+Each test executable focuses on a specific game mechanic:
+-   `run_checkmate_test`: Verifies that the engine can correctly identify a checkmate situation (e.g., Fool's Mate).
+-   `run_check_test`: Ensures the engine detects a 'check' without incorrectly flagging it as checkmate.
+-   `run_castling_test`: Tests both legal and illegal castling scenarios to confirm the rules are enforced correctly.
+-   `run_draw_test`: Validates draw conditions like stalemate and the fifty-move rule.
+-   `run_pvc_test`: Simulates a basic Player vs. Computer turn sequence to ensure the interaction works as expected.
+
+You can run all tests at once with the following command:
+```bash
+./run.sh all_tests
 ```
-▶️  Running build/Chess ...
-Enter search depth (e.g., 3 or 4): 4
-Select mode (1 for Interactive, 2 for Benchmark): 2
 
---- Running Benchmark (8 moves per test) ---
+---
 
-------------------------------------------
---- Testing with 0 threads and depth 4 ---
-------------------------------------------
-Move 1 (White): Game over (Checkmate or Stalemate).
-------------------------------------------
-Average time per move: 0ms
-------------------------------------------
+## 🧗 Biggest Challenge Faced
 
-------------------------------------------
---- Testing with 2 threads and depth 4 ---
-------------------------------------------
-Move 1 (White): G1E1 (+0) | Time: 5ms
-Move 2 (Black): B2D2 (+1) | Time: 4ms
-Move 3 (White): E1D2 (+2) | Time: 5ms
-Move 4 (Black): A2C1 (+3) | Time: 5ms
-Move 5 (White): D2C1 (+4) | Time: 6ms
-Move 6 (Black): A3B2 (+7) | Time: 3ms
-Move 7 (White): C1B2 (+8) | Time: 4ms
-Move 8 (Black): A4A3 (+15) | Time: 1ms
-------------------------------------------
-Average time per move: 4.125ms
-------------------------------------------
+The most significant challenge during the development of this project was the **implementation of the AI agent**. This involved several complex, interconnected parts:
 
-------------------------------------------
---- Testing with 4 threads and depth 4 ---
-------------------------------------------
-Move 1 (White): G3E3 (+0) | Time: 1ms
-Move 2 (Black): B2D2 (+1) | Time: 1ms
-Move 3 (White): E3D2 (+1) | Time: 2ms
-Move 4 (Black): A2C1 (+3) | Time: 1ms
-Move 5 (White): D2C1 (+3) | Time: 2ms
-Move 6 (Black): A3B2 (+7) | Time: 1ms
-Move 7 (White): C1B2 (+7) | Time: 2ms
-Move 8 (Black): A4A3 (+15) | Time: 1ms
-------------------------------------------
-Average time per move: 1.375ms
-------------------------------------------
+1.  **Correctly Implementing Minimax**: The recursive nature of the minimax algorithm, combined with the need to manage board state without making excessive copies, was difficult. The solution was to use an `applyMove` and `undoMove` pattern, which modifies a single board instance and then reverts it. This is efficient but requires careful state management to avoid bugs.
 
-------------------------------------------
---- Testing with 8 threads and depth 4 ---
-------------------------------------------
-Move 1 (White): G2E2 (+0) | Time: 1ms
-Move 2 (Black): B3D3 (+1) | Time: 1ms
-Move 3 (White): E2D3 (+1) | Time: 1ms
-Move 4 (Black): A4C2 (+9) | Time: 2ms
-Move 5 (White): D3C2 (+9) | Time: 1ms
-Move 6 (Black): B1C1 (+10) | Time: 1ms
-Move 7 (White): H3F1 (+11) | Time: 1ms
-Move 8 (Black): A1B1 (+15) | Time: 0ms
-------------------------------------------
-Average time per move: 1ms
-------------------------------------------
-```
+2.  **Integrating Alpha-Beta Pruning**: While the concept of alpha-beta pruning is straightforward, implementing it correctly within the recursive minimax function was tricky. Ensuring that the alpha and beta values were passed and updated correctly through the recursive calls was critical for the optimization to work effectively.
+
+3.  **Designing the Multithreaded Architecture**: Parallelizing the AI's search was the most complex part. The main challenges were:
+    -   **Thread Safety**: Ensuring that multiple threads could write their results to a shared data structure without causing race conditions or deadlocks. This was solved by creating a `SafeMovePQ` (thread-safe priority queue) protected by a `std::mutex`.
+    -   **Work Distribution**: Deciding how to divide the work among threads. The chosen approach of creating "buckets" of moves for each piece provided a natural and effective way to distribute the load.
+    -   **Synchronization**: Making the main thread wait for all worker threads to complete their calculations before determining the final best move. This was handled using `std::future` objects returned by the thread pool.
+
+Overcoming these challenges required a deep understanding of recursion, game theory, and C++ concurrency primitives. The result is a powerful and efficient AI that makes this chess engine a formidable opponent.
+
+---
+
+## 🚀 Future Improvements
+
+With more time, several improvements could be made to enhance the project:
+
+-   **More Sophisticated Evaluation Function**: The current AI only evaluates material. A stronger AI would also consider:
+    -   **Piece-Square Tables**: The value of a piece changes based on its position (e.g., a knight in the center is more valuable than one in a corner).
+    -   **Board Control**: How many squares are attacked by each side.
+    -   **Pawn Structure**: The arrangement of pawns can be a significant strategic factor.
+-   **Opening and Endgame Databases**: To improve performance and play strength, the AI could use a database of standard openings and pre-calculated solutions for common endgame positions.
+-   **Graphical User Interface (GUI)**: A simple graphical interface (using a library like SFML or Qt) would make the game more accessible and visually appealing than the current ASCII UI.
+-   **Network Multiplayer**: Implement networking capabilities to allow two players to compete over the internet.
+-   **Move History and Replay**: Allow players to view a history of the moves made and replay the game from any point.
+-   **Save/Load Game Functionality**: Implement the ability to save the current game state to a file and load it later. This would allow players to pause and resume games at their convenience, and also enable sharing interesting positions or puzzles.
+
+
