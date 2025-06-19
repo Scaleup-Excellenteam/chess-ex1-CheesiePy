@@ -1,3 +1,5 @@
+#include "GameManager.h"
+#include "AI/BestMoveFinder.h"
 #include "Chess.h"
 #include <iostream>
 #include <string>
@@ -7,7 +9,7 @@ using namespace std;
 #ifdef _WIN32
 
 // clear the screen "cls"
-void Chess::clear() const 
+void Chess::clear() const
 {
 	COORD topLeft = { 0, 0 };
 	HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -26,8 +28,8 @@ void Chess::clear() const
 }
 
 // create the GUI - ASCII art
-void Chess::setFrames() 
-{ 
+void Chess::setFrames()
+{
 	for (size_t row = 0; row < _SIZE; ++row)
 		for (size_t col = 0; col < _SIZE; ++col)
 			m_board[row][col] = 32;
@@ -41,7 +43,7 @@ void Chess::setFrames()
 		m_board[20][i] = 205;
 		m_board[i][0] = 186;
 		m_board[i][20] = 186;
-	} 
+	}
 
 	m_board[2][2] = 218;  m_board[2][18] = 191;
 	m_board[18][2] = 192; m_board[18][18] = 217;
@@ -75,11 +77,15 @@ void Chess::setFrames()
 	for (size_t i = 4; i < 17; i += 2)
 		m_board[i][18] = 180;
 
+    // --- CORRECTED GUI LABELS ---
+    // Draw letters 'A' through 'H' on the top and bottom (the file/column)
 	for (size_t i = 3, t = 0; i < 19; i += 2, ++t)
-		m_board[1][i] = m_board[19][i] = ('1' + t);
+		m_board[1][i] = m_board[19][i] = ('A' + t);
 
+    // Draw numbers '8' down to '1' on the left and right (the rank/row)
 	for (size_t i = 3, t = 0; i < 19; i += 2, ++t)
-		m_board[i][1] = m_board[i][19] = ('A' + t);
+		m_board[i][1] = m_board[i][19] = ('8' - t);
+    // --- END CORRECTION ---
 }
 
 void Chess::setPieces()
@@ -149,11 +155,15 @@ void Chess::setFrames()
 	for (size_t i = 4; i < 17; i += 2)
 		m_board[i][18] = '+';
 
+    // --- CORRECTED GUI LABELS ---
+    // Draw letters 'A' through 'H' on the top and bottom (the file/column)
 	for (size_t i = 3, t = 0; i < 19; i += 2, ++t)
-		m_board[1][i] = m_board[19][i] = ('1' + t);
+		m_board[1][i] = m_board[19][i] = ('A' + t);
 
+    // Draw numbers '8' down to '1' on the left and right (the rank/row)
 	for (size_t i = 3, t = 0; i < 19; i += 2, ++t)
-		m_board[i][1] = m_board[i][19] = ('A' + t);
+		m_board[i][1] = m_board[i][19] = ('8' - t);
+    // --- END CORRECTION ---
 }
 
 void Chess::setPieces()
@@ -165,8 +175,23 @@ void Chess::setPieces()
 
 #endif // WINDOWS
 
-// print the only the board to screen 
-void Chess::show() const 
+
+void Chess::syncBoardStringWithBoard()
+{
+    m_boardString.clear();
+    m_boardString.reserve(64);
+
+    const Board& b = manager_.currentBoard();
+
+    for (int r = 0; r < 8; ++r)
+        for (int c = 0; c < 8; ++c)
+            if (const Piece* p = b.getPiece(r, c))
+                m_boardString.push_back(p->getSymbol());
+            else
+                m_boardString.push_back('#');
+}
+
+void Chess::show() const
 {
 	for (size_t row = 0; row < _SIZE; ++row)
 	{
@@ -175,112 +200,163 @@ void Chess::show() const
 		cout << endl;
 	}
 }
-// clear screen and print the board and the relevant msg 
+
 void Chess::displayBoard() const
 {
 	clear();
 	show();
-	cout << m_msg<< m_errorMsg;
-	
+	cout << m_msg << m_errorMsg << m_hint;
 }
-// print the who is turn before getting input 
-void Chess::showAskInput() const 
+
+void Chess::showAskInput() const
 {
-	if (m_turn)
-		cout << "Player 1 (White - Capital letters) >> ";
-	else
-		cout << "Player 2 (Black - Small letters)   >> ";
+	if (m_isComputerGame) {
+		cout << "Your move (White - Small letters) >> ";
+	} else {
+		if (m_turn)
+			cout << "Player 1 (White - Small letters) >> ";
+		else
+			cout << "Player 2 (Black - Capital letters) >> ";
+	}
 }
-// check if the source and dest are the same 
-bool Chess::isSame() const 
+
+bool Chess::isSame() const
 {
 	return ((m_input[0] == m_input[2]) && (m_input[1] == m_input[3]));
-} 
-// check if the input is lockations at board
+}
+
 bool Chess::isValid() const
 {
-	return ((('A' <= m_input[0]) && (m_input[0] <= 'H')) || (('a' <= m_input[0]) && (m_input[0] <= 'h')) &&
+    // This function just checks the basic format, which is still valid.
+	return ((('a' <= m_input[0]) && (m_input[0] <= 'h')) &&
 		(('1' <= m_input[1]) && (m_input[1] <= '8')) &&
-		(('A' <= m_input[2]) && (m_input[2] <= 'H')) || (('a' <= m_input[2]) && (m_input[2] <= 'h')) &&
+		(('a' <= m_input[2]) && (m_input[2] <= 'h')) &&
 		(('1' <= m_input[3]) && (m_input[3] <= '8')));
 }
-	
-// check if the input is exit or quit  
-bool Chess::isExit() const 
+
+bool Chess::isExit() const
 {
 	return ((m_input == "exit") || (m_input == "quit") || (m_input == "EXIT") || (m_input == "QUIT"));
 }
-// execute the movement on board 
+
 void Chess::excute()
 {
-	int row = (m_input[0] - 'a');
-	int col = (m_input[1] - '1');
-	char pieceInSource = m_boardString[(row * 8) + col]; 
-	m_boardString[(row * 8) + col] = '#'; 
+    // --- START OF CORRECTION ---
+    // This function is called after a move has been validated.
+    // We convert the coordinates using the standard system and pass them to the GameManager.
+    int srcCol = m_input[0] - 'a';
+    int dstCol = m_input[2] - 'a';
+    int srcRow = 7 - (m_input[1] - '1');
+    int dstRow = 7 - (m_input[3] - '1');
 
-	row = (m_input[2] - 'a');
-	col = (m_input[3] - '1');
-	m_boardString[(row * 8) + col] = pieceInSource; 
+    // Let the engine make the move using the correct integer coordinates
+    manager_.makeMove(srcRow, srcCol, dstRow, dstCol);
 
-	setPieces(); 
+    // Sync the GUI with the new board state
+    syncBoardStringWithBoard();
+    setPieces();
+    // --- END OF CORRECTION ---
 }
-// check the response code and switch turn if needed 
+
+
 void Chess::doTurn()
 {
-	m_errorMsg = "\n"; 
+	m_errorMsg = "\n";
 	switch (m_codeResponse)
 	{
 	case 11:
-	{
-		m_msg = "there is not piece at the source \n";
+		m_msg = "Invalid move: No piece at source or invalid format.\n";
 		break;
-	}
 	case 12:
-	{
-		m_msg = "the piece in the source is piece of your opponent \n";
+		m_msg = "Invalid move: It's not your piece.\n";
 		break;
-	}
 	case 13:
-	{
-		m_msg = "there one of your pieces at the destination \n";
+		m_msg = "Invalid move: You already have a piece at the destination.\n";
 		break;
-	}
 	case 21:
-	{
-		m_msg = "illegal movement of that piece \n";
+		m_msg = "Invalid move: This piece doesn't move that way.\n";
 		break;
-	}
 	case 31:
-	{
-		m_msg = "this movement will cause you checkmate \n";
+		m_msg = "Invalid move: This would leave your king in check.\n";
 		break;
-	}
-	case 41:
-	{
-		excute();
-		m_turn = !m_turn;
-		m_msg = "the last movement was legal and cause check \n";
+	case 41: // Legal move that caused a check
+	case 42: // Legal move
+		excute(); // Execute the move and update the GUI
+		m_turn = !m_turn; // Switch turns
+
+        // Update hint for the next player
+		auto recs = AI::findBestMoves(manager_.currentBoard(), m_turn, 2);
+		if (!recs.empty()) {
+		    m_hint = "Hint: " + recs.front().toString() + '\n';
+		} else {
+		    m_hint.clear();
+		}
+
+        // Set the message based on whether it was a check or not.
+		if (m_codeResponse == 41) {
+			m_msg = "Legal move. The opponent is in check!\n";
+		} else {
+			m_msg = "Legal move.\n";
+		}
+
+        // Check for draw conditions
+        if (manager_.isStalemate()) {
+            m_msg = "Draw by stalemate!\n";
+            displayBoard();
+            exit(0);
+        }
+        if (manager_.isFiftyMoveDraw()) {
+            m_msg = "Draw by fifty-move rule!\n";
+            displayBoard();
+            exit(0);
+        }
 		break;
-	}
-	case 42:
-	{
-		excute();
-		m_turn = !m_turn;
-		m_msg = "the last movement was legal \n";
-		break;
-	}
 	}
 }
 
 // C'tor
-Chess::Chess(const string& start)
-	: m_boardString(start),m_codeResponse(-1)
+Chess::Chess(bool isComputerGame)
+	: m_boardString("RNBQKBNRPPPPPPPP################################pppppppprnbqkbnr"),
+	  m_codeResponse(-1), 
+	  m_turn(true),
+	  m_isComputerGame(isComputerGame)
 {
 	setFrames();
+	manager_.initGame();
+	syncBoardStringWithBoard();
 	setPieces();
 }
 
-// get the source and destination 
+void Chess::makeComputerMove()
+{
+    // Get the best move from the AI
+    auto bestMoves = AI::findBestMoves(manager_.currentBoard(), m_turn, 1);
+    if (!bestMoves.empty()) {
+        const CMove& aiMove = bestMoves[0].move;
+        // Convert move to string format
+        string moveStr;
+        moveStr += (char)('a' + aiMove.srcCol);
+        moveStr += (char)('1' + (7 - aiMove.srcRow));
+        moveStr += (char)('a' + aiMove.destCol);
+        moveStr += (char)('1' + (7 - aiMove.destRow));
+        
+        // Display the computer's move
+        m_input = moveStr;
+        cout << "Computer plays: " << moveStr << endl;
+        
+        // Validate and execute the move
+        m_codeResponse = validateMoveViaManager(moveStr);
+        doTurn();
+        
+        // After the move is done, reset the code. This prevents the next turn from re-processing it.
+        setCodeResponse(-1); 
+    } else {
+        // No valid moves - should be handled by stalemate/checkmate checks
+        m_msg = "Computer has no valid moves.\n";
+    }
+}
+
+// get the source and destination
 string Chess::getInput()
 {
 	static bool isFirst = true;
@@ -288,42 +364,51 @@ string Chess::getInput()
 	if (isFirst)
 		isFirst = false;
 	else
-		doTurn(); 
+		doTurn();
 
 	displayBoard();
+
+    // If it's computer's turn, make the move and return an empty string
+    if (isComputerTurn()) {
+        makeComputerMove();
+        return "";
+    }
+
 	showAskInput();
 
 	cin >> m_input;
+    // Standardize input to lowercase
+    for (char& c : m_input) {
+        c = std::tolower(c);
+    }
+
 	if (isExit())
 		return "exit";
-	while (!isValid() || isSame())
+
+	while (m_input.length() != 4 || !isValid() || isSame())
 	{
-		if (!isValid())
-			m_errorMsg = "Invalid input !! \n";
+		if (m_input.length() != 4 || !isValid())
+			m_errorMsg = "Invalid input format! Use 4 chars like 'e2e4'.\n";
 		else
-			m_errorMsg = "The source and the destination are the same !! \n";
+			m_errorMsg = "The source and the destination are the same!\n";
 		displayBoard();
 		showAskInput();
 		cin >> m_input;
+        for (char& c : m_input) {
+            c = std::tolower(c);
+        }
 		if (isExit())
 			return "exit";
 	}
-
-	if (m_input != "exit")
-	{
-		if (('A' <= m_input[0]) && (m_input[0] <= 'H'))
-			m_input[0] = (m_input[0] - 'A' + 'a');
-		if (('A' <= m_input[2]) && (m_input[2] <= 'H'))
-			m_input[2] = (m_input[2] - 'A' + 'a');
-	}
-
 	return m_input;
 }
 
 void Chess::setCodeResponse(int codeResponse)
 {
-	if (((11 <= codeResponse) && (codeResponse <= 13)) ||
-		((21 == codeResponse) || (codeResponse == 31)) ||
-		((41 == codeResponse) || (codeResponse == 42)))
-		m_codeResponse = codeResponse;
+	m_codeResponse = codeResponse;
+}
+
+int Chess::validateMoveViaManager(const std::string& mv) const
+{
+    return manager_.validateMove(mv);
 }
