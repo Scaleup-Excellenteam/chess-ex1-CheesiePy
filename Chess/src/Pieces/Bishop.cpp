@@ -1,34 +1,31 @@
-#include "Bishop.h"
+#include "Pieces/Bishop.h"
 
 
 Bishop::Bishop(bool isWhite) : Piece(isWhite) {
-    char symbol = isWhite ? 'B' : 'b'; // Assign symbol based on color
+    char symbol = isWhite ? 'b' : 'B'; // Assign symbol based on color
     bool isAlive = true; // Bishop is alive when created
     this->setSymbol(symbol); // Set the symbol for the piece
     this->setIsAlive(isAlive); // Set the alive status for the piece
 }
 
 
-bool Bishop::isValidMove(int srcRow, int srcCol, int destRow, int destCol, const Board& board) const {
-    // Check if the move is diagonal
-    if (abs(srcRow - destRow) != abs(srcCol - destCol)) {
-        return false; // Invalid move
-    }
+bool Bishop::isValidMove(int srcRow,int srcCol,
+                         int destRow,int destCol,
+                         const Board& board) const
+{
+    if (std::abs(destRow - srcRow) != std::abs(destCol - srcCol))
+        return false;                           // must stay on a diagonal
 
-    // Check path is clear
-    int rowStep = (destRow - srcRow == 0) ? 0 : (destRow - srcRow) / abs(destRow - srcRow);
-    int colStep = (destCol - srcCol == 0) ? 0 : (destCol - srcCol) / abs(destCol - srcCol);
+    int stepR = (destRow > srcRow) ? 1 : -1;
+    int stepC = (destCol > srcCol) ? 1 : -1;
 
-    int row = srcRow + rowStep;
-    int col = srcCol + colStep;
+    for (int r = srcRow + stepR, c = srcCol + stepC;
+         r != destRow;
+         r += stepR, c += stepC)
+        if (board.getPiece(r, c) != nullptr)
+            return false;
 
-    while (row != destRow || col != destCol) {
-        if (board.getPiece(row, col) != nullptr)
-            return false; // path blocked
-        row += rowStep;
-        col += colStep;
-    }
-
-    // Valid bishop move
-    return true;
+    const Piece* dst = board.getPiece(destRow, destCol);
+    return dst == nullptr || dst->getIsWhite() != this->getIsWhite();
 }
+

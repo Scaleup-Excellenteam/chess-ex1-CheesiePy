@@ -1,155 +1,200 @@
-<table>
-<tr style="border: none">
-<td style="border: none">
 
-# THE Chess Template Repository
+# C++ Multithreaded Chess AI 🤖
 
-</td>
-<td align="right" style="border: none">
-<img src="./img/scaleup.png" alt="Scaleup" height="100">
-</td>
-</tr>
+> A powerful command-line chess engine featuring a smart AI opponent that uses C++ multithreading to find the best move with incredible speed.
 
-</table>
-This is a template repository for the Tel Hai Excellenteam (THE) CPP course.
-
-All exercises and submissions should follow the format of this repository. For your convenience, you can start each assignment by cloning this template.
-
-## Environment Setup
-During the course we will utilize Linux based operating system (OS), to run and execute programs.
-
-### Windows Installation
-1. Install [WSL 2](https://learn.microsoft.com/en-us/windows/wsl/install
-) , with Ubuntu distribution.
+<div align="center">
+    <img src="https://img.shields.io/badge/Language-C++-blue.svg" alt="Language C++">
+    <img src="https://img.shields.io/badge/Build-CMake-green.svg" alt="Build CMake">
+    <img src="https://img.shields.io/badge/CI-Passing-brightgreen" alt="CI Passing">
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License MIT">
+</div>
 
 
-### Mac Installation
-1. Follow the instruction presented in the following [video]( https://www.youtube.com/watch?v=LjL_N0OZxvY
-), install Ubuntu (no GUI) version
-2. To install GUI, use following [guide](https://askubuntu.com/questions/53822/how-do-you-run-ubuntu-server-with-a-gui
-)
-3. In case you forgot the default credentials, read following [article](https://www.debugpoint.com/virtualbox-id-password/
-).
+-----
 
+## 📚 Table of Contents
 
-### Linux Installation
-Ensure you have `g++`, `CMake`, and `make` installed:
+  * [🎯 Project Overview](https://www.google.com/search?q=%23-project-overview)
+  * [🚀 Key Features](https://www.google.com/search?q=%23-key-features)
+  * [🛠️ Environment Setup](https://www.google.com/search?q=%23%EF%B8%8F-environment-setup)
+  * [⚙️ Build & Run Instructions](https://www.google.com/search?q=%23%EF%B8%8F-build--run-instructions)
+  * [📁 Project Structure](https://www.google.com/search?q=%23-project-structure)
+  * [🧠 Multithreading Architecture](https://www.google.com/search?q=%23-multithreading-architecture)
+  * [📊 Benchmark Results](https://www.google.com/search?q=%23-benchmark-results)
+
+-----
+
+## 🎯 Project Overview
+
+Welcome to a classic game of chess with a modern twist\! This project brings the timeless strategy game to your command line, powered by a C++ engine. It handles all game logic, from piece movement to validating complex states like check and checkmate.
+
+The standout feature is the intelligent AI opponent. It doesn't just play random moves; it analyzes the board using the **minimax algorithm** and leverages a **custom multithreaded architecture** to find the optimal move, making for a challenging and responsive gameplay experience.
+
+## 🚀 Key Features
+
+  * ♟️ **Complete Chess Logic**: Implements all standard FIDE chess rules for piece movement, captures, and special moves.
+  * 🤖 **Intelligent AI Opponent**: Features a game AI built on the minimax algorithm to evaluate board states and make strategic decisions.
+  * ⚡ **High-Performance Multithreading**: The AI's move calculation is heavily parallelized using a custom thread pool, leveraging multi-core processors for a significant performance boost.
+  * 🔒 **Thread-Safe by Design**: Employs `std::mutex` to protect shared data structures, ensuring that move results from different threads are collected safely and without race conditions.
+  * 🕹️ **Dual Game Modes**: Includes a standard **Interactive Mode** for player-vs-AI gameplay and an automatic **Benchmark Mode** to measure the performance of the multithreaded engine.
+
+## 🛠️ Environment Setup
+
+This project is designed for a Linux-based environment (including WSL for Windows). Ensure you have the following tools installed:
+
+  * `g++` (GNU C++ Compiler)
+  * `cmake`
+  * `make`
+
+You can install these dependencies on an Ubuntu system with a single command:
 
 ```sh
 sudo apt update
 sudo apt install -y g++ cmake make
 ```
 
-## Grading and Conventions
-Your assignment will be graded according to the following criteria. Please make sure your assignment follows the standards and conventions outlined below:
+## ⚙️ Build & Run Instructions
 
+Compiling and running the project is straightforward thanks to CMake. Open your terminal in the project's root directory and follow these steps:
 
-For best practices please use examples presented in [PRACTICES.md](PRACTICES.md), if still there is an uncertainty or missing use cases, you are highly encouraged to contact the staff for further clarifications.
-
-### Branching
-Use the [CONTRIBUTING.md](CONTRIBUTING.md) file as your guideline for proper use of Git. For more information, you are encouraged to search online for "[GitHub Workflow Methodology](https://www.youtube.com/watch?v=U_IFGpJDbeU&ab_channel=DevOpsToolkit)."
-
-
-### Repository Structure
-Please follow the guidelines in this section strictly.
-
-- The repository should include a `CMakeLists.txt` file at the root directory.
-- The repository **MUST NOT** include any compiled binaries (e.g., build/, .o files, a.out, or any other generated executables).(put those file names in `.gitignore` file)
-
-<p align="center">
-  <img src="./img/cpp-logo.png" alt="C++ Logo" width="100" height="100">
-  <img src="./img/linux-logo.jpg" alt="Linux Logo" width="100" height="100">
-</p>    
-
-#### GitHub Configuration
-* The repository should include a `README.md` file at the root directory.
-* The repository should include a `CONTRIBUTING.md` file at the root directory.
-* You must have a `.gitignore` file, and there shouldn’t be any unnecessary files in the repository.
-* 🚨 **CRITICAL:** Repositories without a workflow file at `.github/workflows/c-cpp.yml` will not be graded. :(
-* You must have an `img` directory at the root directory.
-
-#### Project's Files
-
-- The repository should include a `main.cpp` file in src directory.
-- The repository should include a `src` directory at the root.
-  - All source files should be placed in the `src` directory.
-- The repository should include a `include` directory at the root.
-  - All `.h` files should be placed in the `include` directory.
-- The repository should include a `test` directory at the root.
-  - All tests should be placed in the `test` directory.
-
-
-#### Project Tree
-
-Project tree should match the following structure:
-
-```bash
-.
-├── CONTRIBUTING.md
-├── .git
-│   ├── ...
-├── .github
-│   └── workflows
-│       └── c-cpp.yml
-├── .gitignore
-├── img
-│   ├── excellenteam.png
-│   ├── scaleup.png
-│   └── cpp_logo.png
-├── README.md
-├── CMakeLists.txt
-├── src
-│   ├── main.cpp
-│   ├── example.cpp
-│   ├── ...
-├── include
-│   ├── example.h
-│   ├── ...
-├── tests
-│   ├── ...
+you can try running this script
+```sh
+./run.sh
 ```
-## Compilation Instructions
-The evaluators will compile your code using **CMake**. Ensure your project follows the CMake structure correctly.
 
-To compile your project manually, use the following commands:
+if its not working properly please let me know 
+and try this:
 
 ```sh
+# 1. Create a build directory to keep things clean
 mkdir -p build
+
+# 2. Navigate into the new directory
 cd build
+
+# 3. Configure the project using CMake
 cmake ..
+# if the build folder is in the same place as the Chess folder try 
+cmake ../Chess/
+
+# 4. Compile the source code into an executable
 make
-./Chess 
+
+# 5. Run the game!
+./Chess
 ```
 
-Any project that does not compile properly using these steps will not be graded.
+> After running, the application will prompt you to enter the desired AI search depth and to choose between Interactive and Benchmark modes.
 
+## 📁 Project Structure
 
-## How to Submit an Exercise
-You are required to submit each exercise using "GitHub Classroom". To do this, you must upload a link to your "GitHub Classroom" repository via Moodle..
+The codebase is organized into a clean, modular architecture to separate concerns and improve maintainability.
 
-### Branching and Pull Request Guidelines
+```
+Chess/
+├── include/                  # Public headers for all classes
+│   ├── AI/
+│   ├── Pieces/
+│   └── Utils/
+├── src/                      # Source code implementation files
+│   ├── AI/
+│   ├── Pieces/
+│   └── Utils/
+├── CMakeLists.txt            # Root build configuration
+└── ...
+```
 
-- 🚨 Your `main` branch **must remain clean and stable** at all times. Never push directly to `main`.  
-- Create a **new branch** from `main` for each exercise (e.g., `exercise1`, `feature/queen-movement`, etc.).  
-- Work on those branches and push your changes there.  
-- Once you're done, open a **Pull Request (PR)** from your branch where all the changes where made into `main`.  
-- In the PR, review your changes carefully using GitHub’s diff viewer.  
-- Make sure all checks pass (e.g., linter, build).  
-- After merging the PR into `main`, you can submit the repository link via Moodle.
+## 🧠 Multithreading Architecture
 
+To improve the AI's response time, this project parallelizes the most computationally expensive task: finding the best move.
 
-### Pre-submission Checkup
-1. Make sure you've answered all the questions.  
-2. Review and refactor your code for better readability (ideally, review your code one or two days later — sometimes it's better to review with fresh eyes).  
-3. Ensure that all intended files are uploaded to Git and follow the structure convention outlined in the [Repository Structure](#repository-structure) section.  
-4. Ensure that your code is running.  
-5. Once you open a PR, review the changes **carefully**. You can leverage GitHub's built-in diff viewer.  
-6. Wait and confirm that the linter test completed successfully. If the linter test fails, assess the errors and refactor accordingly — otherwise, each error will negatively impact your grade.  
-7. Make sure you followed the [Branching and Pull Request Guidelines](#branching-and-pull-request-guidelines).  
-8. Upload the repository link to Moodle.  
-9. Good luck :)
+#### Work Division
 
-<!-- Center Excellenteam image -->
-<p align="center">
-  <img src="./img/excellenteam.png" alt="Excellenteam">
-</p>
+When it's the AI's turn, the engine first generates all possible legal moves. These moves are then grouped into "buckets," where each bucket contains all the moves for a single piece.
+
+#### Parallel Calculation
+
+A **ThreadPool** dispatches each bucket to a different worker thread. The threads run in parallel, with each one executing the minimax algorithm on its assigned set of moves to calculate a score.
+
+#### Synchronization
+
+As threads complete their analysis, they push the results (the move and its score) into a shared, thread-safe priority queue. This custom queue, `SafeMovePQ`, uses a **`std::mutex`** to lock the data structure during write operations, preventing race conditions and ensuring data integrity. The main thread can then safely pull the highest-scoring move from the queue.
+
+This architecture effectively turns a long, sequential process into a rapid, parallel search.
+
+-----
+
+## 📊 Benchmark Results
+
+This section documents the performance of the `findBestMoves` function over an 8-move automatic game, using a search depth of **[Your Search Depth]**.
+
+| Number of Threads | Average Time per Move (ms) |
+| :---------------: | :------------------------: |
+|         0 (Sequential)         |      **[Your Result]** |
+|         2         |      **[Your Result]** |
+|         4         |      **[Your Result]** |
+|         8         |      **[Your Result]** |
+
+### Analysis
+
+```
+▶️  Running build/Chess ...
+Enter search depth (e.g., 3 or 4): 4
+Select mode (1 for Interactive, 2 for Benchmark): 2
+
+--- Running Benchmark (8 moves per test) ---
+
+------------------------------------------
+--- Testing with 0 threads and depth 4 ---
+------------------------------------------
+Move 1 (White): Game over (Checkmate or Stalemate).
+------------------------------------------
+Average time per move: 0ms
+------------------------------------------
+
+------------------------------------------
+--- Testing with 2 threads and depth 4 ---
+------------------------------------------
+Move 1 (White): G1E1 (+0) | Time: 5ms
+Move 2 (Black): B2D2 (+1) | Time: 4ms
+Move 3 (White): E1D2 (+2) | Time: 5ms
+Move 4 (Black): A2C1 (+3) | Time: 5ms
+Move 5 (White): D2C1 (+4) | Time: 6ms
+Move 6 (Black): A3B2 (+7) | Time: 3ms
+Move 7 (White): C1B2 (+8) | Time: 4ms
+Move 8 (Black): A4A3 (+15) | Time: 1ms
+------------------------------------------
+Average time per move: 4.125ms
+------------------------------------------
+
+------------------------------------------
+--- Testing with 4 threads and depth 4 ---
+------------------------------------------
+Move 1 (White): G3E3 (+0) | Time: 1ms
+Move 2 (Black): B2D2 (+1) | Time: 1ms
+Move 3 (White): E3D2 (+1) | Time: 2ms
+Move 4 (Black): A2C1 (+3) | Time: 1ms
+Move 5 (White): D2C1 (+3) | Time: 2ms
+Move 6 (Black): A3B2 (+7) | Time: 1ms
+Move 7 (White): C1B2 (+7) | Time: 2ms
+Move 8 (Black): A4A3 (+15) | Time: 1ms
+------------------------------------------
+Average time per move: 1.375ms
+------------------------------------------
+
+------------------------------------------
+--- Testing with 8 threads and depth 4 ---
+------------------------------------------
+Move 1 (White): G2E2 (+0) | Time: 1ms
+Move 2 (Black): B3D3 (+1) | Time: 1ms
+Move 3 (White): E2D3 (+1) | Time: 1ms
+Move 4 (Black): A4C2 (+9) | Time: 2ms
+Move 5 (White): D3C2 (+9) | Time: 1ms
+Move 6 (Black): B1C1 (+10) | Time: 1ms
+Move 7 (White): H3F1 (+11) | Time: 1ms
+Move 8 (Black): A1B1 (+15) | Time: 0ms
+------------------------------------------
+Average time per move: 1ms
+------------------------------------------
+```

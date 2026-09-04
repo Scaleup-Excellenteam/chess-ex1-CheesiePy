@@ -1,57 +1,48 @@
 #ifndef BOARD_H
 #define BOARD_H
 
-#include "Piece.h"
+#include "Pieces/Piece.h"
+#include "Utils/CMove.h"
+#include "Utils/MoveScorePair.h"
 #include <memory>
 #include <vector>
 
-
-struct CMove {
-    int srcRow, srcCol;
-    int destRow, destCol;
-};
-
-
-
-
-class Board {
+class Board
+{
 private:
-    std::vector<std::vector<std::unique_ptr<Piece>>> grid; // polymorphic container for pieces
-    // Each cell can hold a unique_ptr to a Piece (or derived class)
-    // This allows for different types of pieces (e.g., Rook, Knight) to be stored in the same container
-    // and managed automatically.
-    // The grid is a 2D vector, where each element is a unique_ptr to a Piece.
+    // 8×8 polymorphic container for pieces
+    std::vector<std::vector<std::unique_ptr<Piece>>> grid;
+
+    /* ─────────────── NEW: move-history stack ─────────────── */
+    struct MoveRecord {
+        CMove mv;                            // the move itself
+        std::unique_ptr<Piece> captured;     // what was on dest before the move
+    };
+    std::vector<MoveRecord> history;         // LIFO stack (push in applyMove)
 
 public:
     Board();
-
     Board(const Board& other);
     Board& operator=(const Board& rhs);
 
-
-    // --- AI support functions ---
-
-    /// return every move that side is allowed to make
-    /// (i.e. no self‐checks, obey piece rules, castling, en‐passant, etc.)
+    // ─────────── AI support functions ───────────
     std::vector<CMove> generateLegalMoves(bool whiteToMove) const;
-
-    /// mutate this Board by playing that move
-    /// (you must update piece positions, captures, castling rights, en‐passant, etc.)
-    void applyMove(CMove m);
-
-    /// true if the given side’s king is currently in check
+    void applyMove(const CMove& m);          // play a move  (push to history)
+    void undoMove(const CMove& m);           // NEW: take it back (pop history)
     bool inCheck(bool whiteKing) const;
 
-
+    // direct square access
     Piece* getPiece(int row, int col) const;
-    void setPiece(int row, int col, std::unique_ptr<Piece> piece);
-
+    void   setPiece(int row, int col, std::unique_ptr<Piece> piece);
     std::unique_ptr<Piece> removePiece(int row, int col);
-    // generate leageal moves for the piece at (row, col)
-
-
-
-    
 };
+
+/* ────── Forward declaration for AI namespace ────── */
+namespace AI
+{
+    using ::MoveScorePair;
+    std::vector<MoveScorePair>
+    findBestMoves(const Board& board, bool isWhite, int limit);
+}
 
 #endif // BOARD_H
